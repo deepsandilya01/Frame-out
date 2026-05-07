@@ -1,0 +1,339 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+/* ============================================
+   FRAME-OUT DESIGN SYSTEM — CINEMATIC NOIR
+   Built from Stitch UI Design Specifications
+   ============================================ */
+
+@theme {
+  /* Core Surfaces */
+  --color-bg: #080808;
+  --color-surface: #0d1515;
+  --color-surface-low: #151d1d;
+  --color-surface-mid: #192121;
+  --color-surface-high: #232b2c;
+  --color-surface-highest: #2e3637;
+
+  /* Primary text */
+  --color-on-surface: #dce4e4;
+  --color-on-surface-muted: #849495;
+  --color-on-surface-dim: #3a494a;
+
+  /* Accent — Dynamic (CSS var driven) */
+  --color-accent: var(--theme-accent, #00F5FF);
+  --color-accent-glow: var(--theme-accent-glow, rgba(0, 245, 255, 0.15));
+  --color-accent-dim: var(--theme-accent-dim, rgba(0, 245, 255, 0.06));
+
+  /* Semantic */
+  --color-error: #ffb4ab;
+  --color-success: #4ade80;
+
+  /* Border */
+  --color-border: rgba(255,255,255,0.06);
+  --color-border-mid: rgba(255,255,255,0.10);
+  --color-border-strong: rgba(255,255,255,0.16);
+
+  /* Font */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ============================================
+   GLOBAL BASE STYLES
+   ============================================ */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #080808;
+    color: #dce4e4;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background-color: var(--theme-accent, #00F5FF);
+    color: #000;
+  }
+}
+
+/* ============================================
+   THEME COLOR SYSTEM
+   Dynamically applied via JS on :root
+   ============================================ */
+:root {
+  --theme-accent: #00F5FF;
+  --theme-accent-glow: rgba(0, 245, 255, 0.15);
+  --theme-accent-dim: rgba(0, 245, 255, 0.06);
+  --theme-accent-border: rgba(0, 245, 255, 0.3);
+}
+:root[data-theme="emerald"] {
+  --theme-accent: #10b981;
+  --theme-accent-glow: rgba(16, 185, 129, 0.15);
+  --theme-accent-dim: rgba(16, 185, 129, 0.06);
+  --theme-accent-border: rgba(16, 185, 129, 0.3);
+}
+:root[data-theme="crimson"] {
+  --theme-accent: #ef4444;
+  --theme-accent-glow: rgba(239, 68, 68, 0.15);
+  --theme-accent-dim: rgba(239, 68, 68, 0.06);
+  --theme-accent-border: rgba(239, 68, 68, 0.3);
+}
+:root[data-theme="purple"] {
+  --theme-accent: #a855f7;
+  --theme-accent-glow: rgba(168, 85, 247, 0.15);
+  --theme-accent-dim: rgba(168, 85, 247, 0.06);
+  --theme-accent-border: rgba(168, 85, 247, 0.3);
+}
+:root[data-theme="orange"] {
+  --theme-accent: #f97316;
+  --theme-accent-glow: rgba(249, 115, 22, 0.15);
+  --theme-accent-dim: rgba(249, 115, 22, 0.06);
+  --theme-accent-border: rgba(249, 115, 22, 0.3);
+}
+:root[data-theme="arctic"] {
+  --theme-accent: #e2e8f0;
+  --theme-accent-glow: rgba(226, 232, 240, 0.12);
+  --theme-accent-dim: rgba(226, 232, 240, 0.05);
+  --theme-accent-border: rgba(226, 232, 240, 0.25);
+}
+
+/* ============================================
+   COMPONENT UTILITIES
+   ============================================ */
+@layer utilities {
+
+  /* === GLASS CARDS === */
+  .glass {
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .glass-mid {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .glass-strong {
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.10);
+  }
+
+  /* Card with accent glow underglow */
+  .glass-glow {
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--theme-accent-border, rgba(0,245,255,0.3));
+    box-shadow: 0 0 40px var(--theme-accent-glow, rgba(0,245,255,0.1)),
+                inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+
+  /* === BUTTONS === */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 9999px;
+    border: 1px solid var(--theme-accent, #00F5FF);
+    background: transparent;
+    color: var(--theme-accent, #00F5FF);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .btn-primary:hover {
+    background: var(--theme-accent-dim, rgba(0,245,255,0.06));
+    box-shadow: 0 0 24px var(--theme-accent-glow, rgba(0,245,255,0.2));
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0px);
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 9999px;
+    border: 1px solid rgba(255,255,255,0.10);
+    background: transparent;
+    color: rgba(255,255,255,0.7);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+  }
+
+  .btn-ghost:hover {
+    border-color: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.04);
+    color: #fff;
+    transform: translateY(-1px);
+  }
+
+  /* === INPUTS === */
+  .input-minimal {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    border-radius: 0;
+    padding: 12px 0 10px;
+    color: #dce4e4;
+    font-size: 15px;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    outline: none;
+  }
+
+  .input-minimal::placeholder {
+    color: #3a494a;
+  }
+
+  .input-minimal:focus {
+    border-bottom-color: var(--theme-accent, #00F5FF);
+    box-shadow: 0 2px 8px var(--theme-accent-glow, rgba(0,245,255,0.12));
+  }
+
+  /* === PILLS === */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.6);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .pill-accent {
+    background: var(--theme-accent-dim, rgba(0,245,255,0.06));
+    border-color: var(--theme-accent-border, rgba(0,245,255,0.3));
+    color: var(--theme-accent, #00F5FF);
+  }
+
+  /* === ACCENT UTILITIES === */
+  .text-accent {
+    color: var(--theme-accent, #00F5FF);
+  }
+
+  .border-accent {
+    border-color: var(--theme-accent-border, rgba(0,245,255,0.3));
+  }
+
+  .bg-accent-glow {
+    background: var(--theme-accent-glow, rgba(0,245,255,0.15));
+  }
+
+  .bg-accent-dim {
+    background: var(--theme-accent-dim, rgba(0,245,255,0.06));
+  }
+
+  /* === LIGHT LEAK DIVIDER === */
+  .divider-laser {
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(255,255,255,0.06) 20%,
+      rgba(255,255,255,0.10) 50%,
+      rgba(255,255,255,0.06) 80%,
+      transparent
+    );
+  }
+
+  /* === AMBIENT GLOW ORBS (bg decorations) === */
+  .glow-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* === TYPOGRAPHY === */
+  .headline-massive {
+    font-size: clamp(48px, 6vw, 88px);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    color: #fff;
+  }
+
+  .headline-large {
+    font-size: clamp(32px, 3.5vw, 52px);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: #fff;
+  }
+
+  .label-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--theme-accent, #00F5FF);
+  }
+
+  /* Hover card lift */
+  .hover-lift {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.3s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    border-color: var(--theme-accent-border, rgba(0,245,255,0.25));
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4),
+                0 0 20px var(--theme-accent-glow, rgba(0,245,255,0.08));
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #080808;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.2);
+  }
+}
