@@ -430,3 +430,91 @@ export const getCalendar = async (req, res) => {
     return res.status(500).json({ message: "Server error", success: false });
   }
 };
+
+// ---------------------------------------------------------------------------
+// GET /api/focus/mood-analytics
+// Returns mood distribution + avg focus time per mood (last 30 days)
+// ---------------------------------------------------------------------------
+export const getMoodAnalytics = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Aggregate mood counts + avg focus per mood
+    const moodAgg = await focusSessionModel.aggregate([
+      {
+        $match: {
+          user: userId,
+          mood: { $exists: true, $ne: null },
+          startedAt: { $gte: thirtyDaysAgo },
+        },
+      },
+      {
+        $group: {
+          _id: "$mood",
+          count:      { $sum: 1 },
+          avgFocus:   { $avg: "$duration" },
+          totalFocus: { $sum: "$duration" },
+        },
+      },
+      { $sort: { count: -1 } },
+    ]);
+
+    // Mood trend (last 14 days, grouped by date)
+    const fourteenDaysAgo = new Date();
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 13);
+
+    const trendRaw = await focusSessionModel.find({
+      user: userId,
+      mood: { $exists: true, $ne: null },
+      startedAt: { $gte: fourteenDaysAgo },
+    })
+      .sort({ startedAt: 1 })
+      .select("mood duration startedAt")
+      .lean();
+
+    // Group by date
+    const trendMap = {};
+    trendRaw.forEach((s) => {
+      const d = s.startedAt.toISOString().split("T")[0];
+      if (!trendMap[d]) trendMap[d] = { date: d, moods: [], totalFocus: 0 };
+      trendMap[d].moods.push(s.mood);
+      trendMap[d].totalFocus += s.duration || 0;
+    });
+
+    const trend = Object.values(trendMap).map((day) => ({
+      date: day.date,
+      dominantMood: (() => {
+        const counts = {};
+        day.moods.forEach((m) => { counts[m] = (counts[m] || 0) + 1; });
+        return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || "unknown";
+      })(),
+      totalFocus: day.totalFocus,
+      sessionCount: day.moods.length,
+    }));
+
+    const MOOD_ORDER = ["sleepy", "calm", "happy", "motivated", "energized"];
+    const distribution = moodAgg.map((m) => ({
+      mood:       m._id,
+      count:      m.count,
+      avgFocus:   Math.round(m.avgFocus || 0),
+      totalFocus: m.totalFocus || 0,
+    }));
+
+    // Best mood for productivity (highest avg focus)
+    const bestMood = [...distribution].sort((a, b) => b.avgFocus - a.avgFocus)[0]?.mood || null;
+
+    return res.status(200).json({
+      message:      "Mood analytics fetched",
+      success:      true,
+      distribution,
+      trend,
+      bestMood,
+      totalTracked: trendRaw.length,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error", success: false });
+  }
+};

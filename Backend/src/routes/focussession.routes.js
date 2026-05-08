@@ -9,6 +9,7 @@ import {
   getWeekSessions,
   getMonthSessions,
   getCalendar,
+  getMoodAnalytics,
 } from "../controllers/focussession.controller.js";
 import {
   validateStartSession,
@@ -74,5 +75,12 @@ focusRouter.get("/month", authenticateUser, getMonthSessions);
  * @access  Private
  */
 focusRouter.get("/calendar", authenticateUser, getCalendar);
+
+/**
+ * @route   GET /api/focus/mood-analytics
+ * @desc    Returns mood distribution and avg focus time per mood
+ * @access  Private
+ */
+focusRouter.get("/mood-analytics", authenticateUser, getMoodAnalytics);
 
 export default focusRouter;

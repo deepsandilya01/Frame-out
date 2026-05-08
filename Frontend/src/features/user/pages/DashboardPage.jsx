@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { Flame, Zap, Clock, Target, ChevronRight, TrendingUp, Brain } from 'lucide-react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useDashboard } from '../hook/useDashboard';
+import DailyMissions from '../components/DailyMissions';
 
 const PRIORITY_COLOR = { high: '#ef4444', medium: '#f97316', low: '#4ade80' };
 const DAY_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -194,8 +195,15 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Recent Tasks */}
-      <div className="content-card glass rounded-2xl p-5">
+      {/* Daily Missions + Recent Tasks row */}
+      <div className="grid grid-cols-5 gap-4">
+        {/* Daily Missions widget */}
+        <div className="col-span-2">
+          <DailyMissions onXPEarned={(xp) => { /* toast or stat refresh */ }} />
+        </div>
+
+        {/* Recent Tasks */}
+        <div className="content-card col-span-3 glass rounded-2xl p-5">
         <div className="flex items-center justify-between mb-4">
           <span className="label-eyebrow">ACTIVE TASKS</span>
           <Link to="/tasks" className="text-xs text-accent hover:underline">View all →</Link>
@@ -222,6 +230,7 @@ export default function DashboardPage() {
             ))}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

@@ -201,3 +201,139 @@ Respond in this EXACT JSON format:
 
   return await askJSON(prompt);
 }
+
+// ---------------------------------------------------------------------------
+// 4. Adaptive Timer Suggestion
+// ---------------------------------------------------------------------------
+export async function getAdaptiveTimer(data) {
+  const { avgSessionLength, completionRate, avgDistractions, preferredMode, currentStreak, totalSessions } = data;
+
+  const prompt = `
+You are a focus science expert for "Frame-Out" productivity app.
+Analyze the user's focus session data and recommend the optimal timer duration for their NEXT session.
+
+USER DATA:
+- Average session length (last 14 days): ${avgSessionLength} minutes
+- Session completion rate: ${completionRate}%
+- Average distractions per session: ${avgDistractions}
+- Preferred mode: ${preferredMode}
+- Current streak: ${currentStreak} days
+- Total sessions completed: ${totalSessions}
+
+Consider flow state science: sessions too long cause burnout, too short prevent deep work.
+Recommend a duration that maximizes flow state based on their actual performance.
+
+Respond in this EXACT JSON format:
+{
+  "suggested_minutes": <number between 15 and 90>,
+  "suggested_break": <number between 3 and 20>,
+  "confidence": "high|medium|low",
+  "reasoning": "2-3 sentences explaining why this duration is optimal for them",
+  "mode": "pomodoro or custom",
+  "tip": "one specific tip to improve their next session"
+}`.trim();
+
+  return await askJSON(prompt);
+}
+
+// ---------------------------------------------------------------------------
+// 5. Burnout Detection
+// ---------------------------------------------------------------------------
+export async function detectBurnout(data) {
+  const { avgDistractions7d, sessionsLast7d, completionRate7d, streak, avgSessionLength, moodTrend } = data;
+
+  const prompt = `
+You are a burnout detection AI for "Frame-Out" productivity app.
+Analyze user metrics to detect burnout, overwork, or declining focus.
+
+METRICS (last 7 days):
+- Sessions completed: ${sessionsLast7d}
+- Average distractions per session: ${avgDistractions7d}
+- Session completion rate: ${completionRate7d}%
+- Current streak: ${streak} days
+- Average session length: ${avgSessionLength} minutes
+- Recent mood trend: ${moodTrend || "not tracked"}
+
+Burnout signals: high distractions + low completion rate + declining session length + negative moods.
+Overwork signals: very high session count + low completion + high distractions despite effort.
+
+Respond in this EXACT JSON format:
+{
+  "risk_level": "none|low|medium|high",
+  "risk_score": <number 0-100>,
+  "status": "one of: thriving|stable|at_risk|burnout_detected",
+  "headline": "short diagnosis headline (max 10 words)",
+  "signals": ["signal 1", "signal 2"],
+  "recommendations": ["action 1", "action 2", "action 3"],
+  "recovery_plan": "one concrete recovery suggestion for today",
+  "encouragement": "one motivating sentence"
+}`.trim();
+
+  return await askJSON(prompt);
+}
+
+// ---------------------------------------------------------------------------
+// 6. Daily Mission Generator
+// ---------------------------------------------------------------------------
+export async function generateDailyMissions(data) {
+  const { streak, level, tasksBacklog, totalSessions7d, completionRate, avgDistractions } = data;
+
+  const prompt = `
+You are a productivity game master for "Frame-Out", a focus and productivity app.
+Generate exactly 3 personalized daily missions for the user based on their stats.
+Missions should be achievable today, gradually challenging, and directly tied to the app's features.
+
+USER STATS:
+- Current streak: ${streak} days
+- Level: ${level}
+- Tasks in backlog: ${tasksBacklog}
+- Sessions last 7 days: ${totalSessions7d}
+- Completion rate: ${completionRate}%
+- Avg distractions per session: ${avgDistractions}
+
+MISSION RULES:
+- One EASY mission (simple, quick win)
+- One MEDIUM mission (requires focus or consistency)
+- One HARD mission (stretch goal)
+- XP rewards: easy=10-20, medium=25-40, hard=50-75
+- Categories: "focus", "tasks", "wellness", "streak", "reflection"
+
+Respond with this EXACT JSON array:
+[
+  { "title": "short title (max 8 words)", "description": "what to do, 1-2 sentences", "xpReward": 15, "difficulty": "easy", "category": "focus" },
+  { "title": "...", "description": "...", "xpReward": 30, "difficulty": "medium", "category": "tasks" },
+  { "title": "...", "description": "...", "xpReward": 60, "difficulty": "hard", "category": "wellness" }
+]`.trim();
+
+  try {
+    const result = await client.chat.complete({
+      model: MODEL,
+      messages: [
+        { role: "system", content: "You are a productivity AI. Always respond with valid raw JSON only — no markdown, no code fences. Output only the JSON array." },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.85,
+      maxTokens: 700,
+    });
+
+    let raw = result.choices[0].message.content.trim();
+    raw = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+
+    const parsed = JSON.parse(raw);
+    const arr = Array.isArray(parsed) ? parsed : (parsed.missions || []);
+    return arr.slice(0, 3).map((m) => ({
+      title:       m.title       || "Complete a task",
+      description: m.description || "",
+      xpReward:    Number(m.xpReward) || 15,
+      difficulty:  m.difficulty  || "easy",
+      category:    m.category    || "focus",
+      completed:   false,
+    }));
+  } catch {
+    return [
+      { title: "Complete a focus session",     description: "Finish one Pomodoro without distractions.",               xpReward: 15, difficulty: "easy",   category: "focus",      completed: false },
+      { title: "Complete 3 tasks",             description: "Mark 3 tasks as done in your task list today.",            xpReward: 30, difficulty: "medium", category: "tasks",      completed: false },
+      { title: "Deep Work for 45 minutes",     description: "Use Deep Work mode for a 45-min uninterrupted session.",   xpReward: 60, difficulty: "hard",   category: "focus",      completed: false },
+    ];
+  }
+}

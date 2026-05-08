@@ -29,6 +29,7 @@ export const userService = {
   getFocusWeek:   () => api.get('/focus/week').then(r => r.data),
   getFocusMonth:  () => api.get('/focus/month').then(r => r.data),
   getFocusCalendar:() => api.get('/focus/calendar').then(r => r.data),
+  getMoodAnalytics: () => api.get('/focus/mood-analytics').then(r => r.data),
 
   // ─── ANALYTICS ────────────────────────────────────────────────────────────
   syncAnalytics:      () => api.post('/analytics/sync').then(r => r.data),
@@ -54,4 +55,20 @@ export const userService = {
   getProductivityAnalysis: () => api.post('/ai/productivity-analysis').then(r => r.data),
   getFocusSuggestions:     () => api.post('/ai/focus-suggestions').then(r => r.data),
   getWeeklyReport:         () => api.post('/ai/weekly-report').then(r => r.data),
+  getAdaptiveTimer:        () => api.get('/ai/adaptive-timer').then(r => r.data),
+  getBurnoutCheck:         () => api.get('/ai/burnout-check').then(r => r.data),
+
+  // ─── JOURNAL ──────────────────────────────────────────────────────────────
+  getJournalToday:   ()         => api.get('/journal/today').then(r => r.data),
+  saveJournalToday:  (data)     => api.put('/journal/today', data).then(r => r.data),
+  getJournalHistory: (params)   => api.get('/journal/history', { params }).then(r => r.data),
+  getJournalByDate:  (date)     => api.get(`/journal/${date}`).then(r => r.data),
+
+  // ─── MISSIONS ─────────────────────────────────────────────────────────────
+  getTodayMissions:    ()   => api.get('/missions/today').then(r => r.data),
+  completeMission:     (id) => api.patch(`/missions/${id}/complete`).then(r => r.data),
+  regenerateMissions:  ()   => api.post('/missions/regenerate').then(r => r.data),
+
+  // ─── HISTORY ──────────────────────────────────────────────────────────────
+  getFocusHistoryFull: (params) => api.get('/focus/histories', { params }).then(r => r.data),
 };

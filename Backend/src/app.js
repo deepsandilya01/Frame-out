@@ -12,6 +12,8 @@ import analyticsRouter from "./routes/analytics.routes.js";
 import heatmapRouter from "./routes/heatmap.routes.js";
 import statsRouter from "./routes/userstats.routes.js";
 import aiRouter from "./routes/ai.routes.js";
+import journalRouter from "./routes/journal.routes.js";
+import missionRouter from "./routes/mission.routes.js";
 
 const app = express();
 
@@ -53,5 +55,7 @@ app.use("/api/analytics", analyticsRouter);
 app.use("/api/heatmap", heatmapRouter);
 app.use("/api/userstats", statsRouter);
 app.use("/api/ai", aiRouter);
+app.use("/api/journal", journalRouter);
+app.use("/api/missions", missionRouter);
 
 export default app;

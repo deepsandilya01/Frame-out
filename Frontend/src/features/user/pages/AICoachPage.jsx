@@ -1,53 +1,105 @@
 import React, { useEffect, useState } from 'react';
-import { Brain, TrendingUp, FileText, Loader, RefreshCw, Sparkles } from 'lucide-react';
-import { useAIInsights } from '../hook/useAIInsights';
+import { Brain, Zap, FileText, AlertTriangle, RefreshCw, Clock } from 'lucide-react';
+import { userService } from '../service/user.service';
 
-function InsightCard({ title, icon: Icon, children, onRefresh, loading }) {
+const STATUS_COLORS = {
+  thriving:        { bg: 'rgba(16,185,129,0.1)',  border: 'rgba(16,185,129,0.3)',  text: '#10b981', badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-400/20' },
+  stable:          { bg: 'rgba(0,245,255,0.06)',  border: 'rgba(0,245,255,0.2)',   text: '#00F5FF', badge: 'bg-cyan-500/10 text-cyan-400 border-cyan-400/20' },
+  at_risk:         { bg: 'rgba(251,191,36,0.08)', border: 'rgba(251,191,36,0.3)',  text: '#fbbf24', badge: 'bg-amber-500/10 text-amber-400 border-amber-400/20' },
+  burnout_detected:{ bg: 'rgba(239,68,68,0.08)',  border: 'rgba(239,68,68,0.3)',   text: '#ef4444', badge: 'bg-red-500/10 text-red-400 border-red-400/20' },
+};
+
+const RISK_COLORS = { none: '#10b981', low: '#00F5FF', medium: '#fbbf24', high: '#ef4444' };
+
+function Section({ icon: Icon, title, children, loading, onRefresh }) {
   return (
-    <div className="glass-glow rounded-2xl p-5 relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-1 h-full" style={{ background: 'var(--theme-accent)' }} />
-      <div className="flex items-center justify-between mb-4">
+    <div className="glass rounded-2xl overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-white/6"
+           style={{ background: 'rgba(255,255,255,0.02)' }}>
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-accent-dim flex items-center justify-center">
-            <Icon size={14} className="text-accent" />
-          </div>
-          <h3 className="text-white font-semibold text-sm">{title}</h3>
+          <Icon size={14} className="text-accent" />
+          <span className="text-white text-sm font-semibold">{title}</span>
         </div>
         <button onClick={onRefresh} disabled={loading}
-                className="w-7 h-7 rounded-lg text-[#849495] hover:text-white hover:bg-white/5 flex items-center justify-center transition-all">
-          <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+          className="w-7 h-7 rounded-lg hover:bg-white/5 flex items-center justify-center transition-all">
+          <RefreshCw size={12} className={`text-[#849495] ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
-      {children}
+      <div className="p-5">{children}</div>
     </div>
   );
 }
 
-function ListItem({ text }) {
+function Loader() {
   return (
-    <li className="flex gap-2 text-sm text-[#b9caca] leading-relaxed">
-      <span className="text-accent mt-1 flex-shrink-0">▸</span>
-      {text}
-    </li>
+    <div className="flex items-center gap-3 py-4">
+      <div className="w-5 h-5 rounded-full border-2 border-accent/20 border-t-accent animate-spin flex-shrink-0" />
+      <span className="text-[#849495] text-sm">Mistral AI is thinking…</span>
+    </div>
   );
 }
 
 export default function AICoachPage() {
-  const { ai, fetchAnalysis, fetchSuggestions, fetchWeeklyReport, fetchAll } = useAIInsights();
-  const [tab, setTab] = useState('analysis'); // 'analysis' | 'suggestions' | 'report'
+  const [tab, setTab] = useState('analysis');
 
-  useEffect(() => { fetchAll(); }, []);
+  const [analysis,  setAnalysis]  = useState(null);
+  const [analysisL, setAnalysisL] = useState(false);
 
-  const { analysis, suggestions, weeklyReport, loading, error } = ai;
+  const [suggestions, setSuggestions] = useState(null);
+  const [suggestL,    setSuggestL]    = useState(false);
+
+  const [report,  setReport]  = useState(null);
+  const [reportL, setReportL] = useState(false);
+
+  const [burnout,  setBurnout]  = useState(null);
+  const [burnoutL, setBurnoutL] = useState(false);
+
+  const fetchAnalysis = async () => {
+    setAnalysisL(true);
+    try { const r = await userService.getProductivityAnalysis(); setAnalysis(r.analysis); }
+    catch (e) { setAnalysis({ _error: e.message }); }
+    finally { setAnalysisL(false); }
+  };
+
+  const fetchSuggestions = async () => {
+    setSuggestL(true);
+    try { const r = await userService.getFocusSuggestions(); setSuggestions(r.suggestions); }
+    catch (e) { setSuggestions({ _error: e.message }); }
+    finally { setSuggestL(false); }
+  };
+
+  const fetchReport = async () => {
+    setReportL(true);
+    try { const r = await userService.getWeeklyReport(); setReport(r.report); }
+    catch (e) { setReport({ _error: e.message }); }
+    finally { setReportL(false); }
+  };
+
+  const fetchBurnout = async () => {
+    setBurnoutL(true);
+    try { const r = await userService.getBurnoutCheck(); setBurnout(r.burnout); }
+    catch (e) { setBurnout({ _error: e.message }); }
+    finally { setBurnoutL(false); }
+  };
+
+  // Load on tab switch
+  useEffect(() => {
+    if (tab === 'analysis'   && !analysis)    fetchAnalysis();
+    if (tab === 'suggestions'&& !suggestions) fetchSuggestions();
+    if (tab === 'report'     && !report)      fetchReport();
+    if (tab === 'burnout'    && !burnout)     fetchBurnout();
+  }, [tab]);
 
   const TABS = [
-    { id: 'analysis',    label: 'Analysis',    icon: TrendingUp },
-    { id: 'suggestions', label: 'Suggestions', icon: Sparkles },
-    { id: 'report',      label: 'Weekly Report',icon: FileText },
+    { key: 'analysis',    icon: Brain,         label: 'Analysis' },
+    { key: 'suggestions', icon: Zap,           label: 'Suggestions' },
+    { key: 'report',      icon: FileText,      label: 'Weekly Report' },
+    { key: 'burnout',     icon: AlertTriangle, label: 'Burnout Check' },
   ];
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-accent-dim flex items-center justify-center"
              style={{ border: '1px solid rgba(0,245,255,0.3)' }}>
@@ -62,157 +114,251 @@ export default function AICoachPage() {
       {/* Tabs */}
       <div className="flex gap-1 glass rounded-full p-1 w-fit">
         {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
-              tab === t.id ? 'bg-accent-dim text-accent border border-accent/20' : 'text-[#849495] hover:text-white'
+          <button key={t.key} onClick={() => setTab(t.key)}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium transition-all ${
+              tab === t.key
+                ? t.key === 'burnout'
+                  ? 'bg-red-500/10 text-red-400 border border-red-400/20'
+                  : 'bg-accent-dim text-accent border border-accent/20'
+                : 'text-[#849495] hover:text-white'
             }`}>
-            <t.icon size={11} />{t.label}
+            <t.icon size={11} /> {t.label}
           </button>
         ))}
       </div>
 
-      {error && (
-        <div className="glass rounded-xl p-4 text-red-400 text-sm flex items-center gap-2">
-          AI service error. Check your MISTRAL_API_KEY.
-          <button onClick={fetchAll} className="ml-auto text-accent underline">Retry</button>
-        </div>
-      )}
-
-      {/* Analysis Tab */}
+      {/* ── Analysis Tab ── */}
       {tab === 'analysis' && (
-        <InsightCard title="Productivity Analysis" icon={TrendingUp}
-                     onRefresh={fetchAnalysis} loading={loading}>
-          {!analysis ? (
-            <div className="flex items-center gap-2 text-[#849495] text-sm">
-              {loading ? <><Loader size={14} className="animate-spin" />Analyzing your patterns…</> : 'Click refresh to get insights'}
-            </div>
-          ) : (
+        <Section icon={Brain} title="Productivity Analysis" loading={analysisL} onRefresh={fetchAnalysis}>
+          {analysisL ? <Loader /> : analysis?._error ? (
+            <p className="text-red-400 text-sm">{analysis._error}</p>
+          ) : analysis ? (
             <div className="space-y-4">
-              {analysis.overall_score !== undefined && (
-                <div>
-                  <p className="label-eyebrow mb-2">OVERALL SCORE</p>
-                  <div className="flex items-center gap-3">
-                    <div className="text-4xl font-bold text-accent">{analysis.overall_score}</div>
-                    <div className="flex-1 h-2 rounded-full bg-white/5">
-                      <div className="h-full rounded-full bg-accent"
-                           style={{ width: `${analysis.overall_score}%`, boxShadow: '0 0 8px var(--theme-accent)' }} />
-                    </div>
-                    <span className="text-[#849495] text-sm">/100</span>
-                  </div>
-                </div>
+              {analysis.headline && (
+                <p className="text-accent font-semibold text-base">{analysis.headline}</p>
               )}
-
+              {analysis.score_interpretation && (
+                <p className="text-[#849495] text-sm leading-relaxed">{analysis.score_interpretation}</p>
+              )}
               {analysis.strengths?.length > 0 && (
                 <div>
                   <p className="label-eyebrow mb-2">STRENGTHS</p>
-                  <ul className="space-y-1.5">
-                    {analysis.strengths.map((s, i) => <ListItem key={i} text={s} />)}
-                  </ul>
+                  {analysis.strengths.map((s, i) => (
+                    <div key={i} className="flex items-start gap-2 text-sm text-[#dce4e4] mb-1.5">
+                      <span className="text-accent mt-0.5">▸</span>{s}
+                    </div>
+                  ))}
                 </div>
               )}
-
-              {analysis.areas_for_improvement?.length > 0 && (
+              {analysis.areas_to_improve?.length > 0 && (
                 <div>
-                  <p className="label-eyebrow mb-2">GROWTH AREAS</p>
-                  <ul className="space-y-1.5">
-                    {analysis.areas_for_improvement.map((s, i) => <ListItem key={i} text={s} />)}
-                  </ul>
+                  <p className="label-eyebrow mb-2">AREAS TO IMPROVE</p>
+                  {analysis.areas_to_improve.map((a, i) => (
+                    <div key={i} className="flex items-start gap-2 text-sm text-[#849495] mb-1.5">
+                      <span className="text-amber-400 mt-0.5">▸</span>{a}
+                    </div>
+                  ))}
                 </div>
               )}
-
-              {analysis.summary && (
-                <p className="text-[#849495] text-sm leading-relaxed border-t border-white/5 pt-4">
-                  {analysis.summary}
-                </p>
+              {analysis.distraction_insight && (
+                <div className="glass rounded-xl p-3 border-l-2 border-amber-400/50">
+                  <p className="text-amber-400 text-xs font-semibold mb-0.5">DISTRACTION INSIGHT</p>
+                  <p className="text-[#dce4e4] text-sm">{analysis.distraction_insight}</p>
+                </div>
+              )}
+              {analysis.tomorrow_goal && (
+                <div className="glass-glow rounded-xl p-3">
+                  <p className="label-eyebrow mb-1">TOMORROW'S GOAL</p>
+                  <p className="text-accent text-sm font-medium">{analysis.tomorrow_goal}</p>
+                </div>
               )}
             </div>
-          )}
-        </InsightCard>
+          ) : null}
+        </Section>
       )}
 
-      {/* Suggestions Tab */}
+      {/* ── Suggestions Tab ── */}
       {tab === 'suggestions' && (
-        <InsightCard title="Focus Suggestions" icon={Sparkles}
-                     onRefresh={fetchSuggestions} loading={loading}>
-          {!suggestions ? (
-            <div className="flex items-center gap-2 text-[#849495] text-sm">
-              {loading ? <><Loader size={14} className="animate-spin" />Generating suggestions…</> : 'Click refresh to get suggestions'}
-            </div>
-          ) : (
+        <Section icon={Zap} title="Focus Suggestions" loading={suggestL} onRefresh={fetchSuggestions}>
+          {suggestL ? <Loader /> : suggestions?._error ? (
+            <p className="text-red-400 text-sm">{suggestions._error}</p>
+          ) : suggestions ? (
             <div className="space-y-4">
-              {suggestions.best_time_to_focus && (
-                <div className="glass-mid rounded-xl p-4">
-                  <p className="label-eyebrow mb-1">OPTIMAL FOCUS TIME</p>
-                  <p className="text-accent font-semibold">{suggestions.best_time_to_focus}</p>
+              <div className="glass rounded-xl p-4 flex items-center gap-4">
+                <Clock size={20} className="text-accent flex-shrink-0" />
+                <div>
+                  <p className="label-eyebrow mb-0.5">OPTIMAL FOCUS TIME</p>
+                  <p className="text-accent font-bold text-lg">{suggestions.best_time_to_focus}</p>
                 </div>
-              )}
+                <div className="ml-auto text-right">
+                  <p className="label-eyebrow mb-0.5">RECOMMENDED SESSION</p>
+                  <p className="text-white font-bold">{suggestions.optimal_session_length}m focus · {suggestions.optimal_break_length}m break</p>
+                </div>
+              </div>
               {suggestions.tips?.length > 0 && (
                 <div>
                   <p className="label-eyebrow mb-2">TIPS</p>
-                  <ul className="space-y-2">
-                    {suggestions.tips.map((tip, i) => <ListItem key={i} text={tip} />)}
-                  </ul>
+                  {suggestions.tips.map((t, i) => (
+                    <div key={i} className="flex items-start gap-2 text-sm text-[#dce4e4] mb-2">
+                      <span className="text-accent mt-0.5">▸</span>{t}
+                    </div>
+                  ))}
                 </div>
               )}
               {suggestions.distraction_strategy && (
                 <div>
-                  <p className="label-eyebrow mb-2">DISTRACTION STRATEGY</p>
-                  <p className="text-sm text-[#b9caca] leading-relaxed">{suggestions.distraction_strategy}</p>
+                  <p className="label-eyebrow mb-1">DISTRACTION STRATEGY</p>
+                  <p className="text-[#dce4e4] text-sm leading-relaxed">{suggestions.distraction_strategy}</p>
                 </div>
               )}
               {suggestions.mood_note && (
-                <div className="glass-mid rounded-xl p-3">
-                  <p className="text-xs text-[#849495] italic">{suggestions.mood_note}</p>
+                <div className="glass rounded-xl p-3 border border-white/5">
+                  <p className="text-[#849495] text-xs italic">{suggestions.mood_note}</p>
                 </div>
               )}
             </div>
-          )}
-        </InsightCard>
+          ) : null}
+        </Section>
       )}
 
-      {/* Weekly Report Tab */}
+      {/* ── Weekly Report Tab ── */}
       {tab === 'report' && (
-        <InsightCard title="Weekly Performance Report" icon={FileText}
-                     onRefresh={fetchWeeklyReport} loading={loading}>
-          {!weeklyReport ? (
-            <div className="flex items-center gap-2 text-[#849495] text-sm">
-              {loading ? <><Loader size={14} className="animate-spin" />Generating report…</> : 'Click refresh to generate report'}
-            </div>
-          ) : (
+        <Section icon={FileText} title="Weekly Report" loading={reportL} onRefresh={fetchReport}>
+          {reportL ? <Loader /> : report?._error ? (
+            <p className="text-red-400 text-sm">{report._error}</p>
+          ) : report ? (
             <div className="space-y-4">
-              {weeklyReport.performance_rating && (
-                <div className="flex items-center gap-4">
-                  <div className="text-5xl font-bold text-accent">{weeklyReport.performance_rating}</div>
-                  <div>
-                    <p className="text-white font-semibold">{weeklyReport.headline || 'Weekly Performance'}</p>
-                    <p className="text-[#849495] text-xs">{weeklyReport.period}</p>
-                  </div>
+              {report.title && <p className="text-accent font-bold text-lg">{report.title}</p>}
+              {report.summary && <p className="text-[#849495] text-sm leading-relaxed">{report.summary}</p>}
+              {report.trend && (
+                <div className={`pill text-sm px-3 py-1 ${
+                  report.trend === 'improving' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-400/20' :
+                  report.trend === 'declining' ? 'text-red-400 bg-red-500/10 border-red-400/20' :
+                  'text-[#849495] bg-white/5'
+                }`}>
+                  {report.trend === 'improving' ? '↑' : report.trend === 'declining' ? '↓' : '→'} {report.trend}
+                  {report.trend_explanation && ` · ${report.trend_explanation}`}
                 </div>
               )}
-              {weeklyReport.highlights?.length > 0 && (
+              {report.highlights?.length > 0 && (
                 <div>
                   <p className="label-eyebrow mb-2">HIGHLIGHTS</p>
-                  <ul className="space-y-1.5">
-                    {weeklyReport.highlights.map((h, i) => <ListItem key={i} text={h} />)}
-                  </ul>
+                  {report.highlights.map((h, i) => (
+                    <div key={i} className="flex items-start gap-2 text-sm text-[#dce4e4] mb-1.5">
+                      <span className="text-amber-400">★</span>{h}
+                    </div>
+                  ))}
                 </div>
               )}
-              {weeklyReport.recommendations?.length > 0 && (
-                <div>
-                  <p className="label-eyebrow mb-2">NEXT WEEK RECOMMENDATIONS</p>
-                  <ul className="space-y-1.5">
-                    {weeklyReport.recommendations.map((r, i) => <ListItem key={i} text={r} />)}
-                  </ul>
+              {report.next_week_plan && (
+                <div className="glass rounded-xl p-4">
+                  <p className="label-eyebrow mb-3">NEXT WEEK PLAN</p>
+                  <div className="grid grid-cols-3 gap-3 mb-3">
+                    <div className="text-center">
+                      <p className="text-accent font-bold text-xl">{report.next_week_plan.focus_goal_hours}h</p>
+                      <p className="text-[#849495] text-xs">Focus Goal</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-accent font-bold text-xl">{report.next_week_plan.session_goal}</p>
+                      <p className="text-[#849495] text-xs">Sessions</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-accent font-bold text-xl">{report.next_week_plan.task_goal}</p>
+                      <p className="text-[#849495] text-xs">Tasks</p>
+                    </div>
+                  </div>
+                  {report.next_week_plan.key_habit && (
+                    <p className="text-[#dce4e4] text-sm">🎯 {report.next_week_plan.key_habit}</p>
+                  )}
                 </div>
               )}
-              {weeklyReport.message && (
-                <div className="glass-mid rounded-xl p-4 border-l-2 border-accent/50">
-                  <p className="text-sm text-[#dce4e4] italic leading-relaxed">"{weeklyReport.message}"</p>
-                </div>
+              {report.motivational_close && (
+                <p className="text-white italic text-sm text-center py-2 border-t border-white/5">
+                  "{report.motivational_close}"
+                </p>
               )}
             </div>
-          )}
-        </InsightCard>
+          ) : null}
+        </Section>
+      )}
+
+      {/* ── Burnout Check Tab ── */}
+      {tab === 'burnout' && (
+        <Section icon={AlertTriangle} title="Burnout Detection" loading={burnoutL} onRefresh={fetchBurnout}>
+          {burnoutL ? <Loader /> : burnout?._error ? (
+            <p className="text-red-400 text-sm">{burnout._error}</p>
+          ) : burnout ? (() => {
+            const sc = STATUS_COLORS[burnout.status] || STATUS_COLORS.stable;
+            return (
+              <div className="space-y-4">
+                {/* Status card */}
+                <div className="rounded-2xl p-5 flex items-center gap-5"
+                     style={{ background: sc.bg, border: `1px solid ${sc.border}` }}>
+                  {/* Risk gauge */}
+                  <div className="relative w-20 h-20 flex-shrink-0">
+                    <svg width="80" height="80" style={{ transform: 'rotate(-90deg)' }}>
+                      <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" />
+                      <circle cx="40" cy="40" r="32" fill="none"
+                              stroke={RISK_COLORS[burnout.risk_level] || '#849495'} strokeWidth="6"
+                              strokeLinecap="round"
+                              strokeDasharray={2 * Math.PI * 32}
+                              strokeDashoffset={2 * Math.PI * 32 * (1 - (burnout.risk_score || 0) / 100)}
+                              style={{ transition: 'stroke-dashoffset 1s ease' }} />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center text-center">
+                      <div>
+                        <p className="text-lg font-bold text-white">{burnout.risk_score}</p>
+                        <p className="text-[9px] text-[#849495] uppercase">risk</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className={`pill text-xs mb-2 ${sc.badge}`}>
+                      {burnout.status?.replace('_', ' ').toUpperCase()}
+                    </div>
+                    <p className="text-white font-semibold">{burnout.headline}</p>
+                    <p className="text-[#849495] text-xs mt-1">Risk: {burnout.risk_level}</p>
+                  </div>
+                </div>
+
+                {burnout.signals?.length > 0 && (
+                  <div>
+                    <p className="label-eyebrow mb-2">DETECTED SIGNALS</p>
+                    {burnout.signals.map((s, i) => (
+                      <div key={i} className="flex items-start gap-2 text-sm text-amber-400 mb-1.5">
+                        <span>⚠</span>{s}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {burnout.recommendations?.length > 0 && (
+                  <div>
+                    <p className="label-eyebrow mb-2">RECOMMENDATIONS</p>
+                    {burnout.recommendations.map((r, i) => (
+                      <div key={i} className="flex items-start gap-2 text-sm text-[#dce4e4] mb-1.5">
+                        <span className="text-accent">▸</span>{r}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {burnout.recovery_plan && (
+                  <div className="glass rounded-xl p-3 border-l-2 border-emerald-400/50">
+                    <p className="text-emerald-400 text-xs font-semibold mb-0.5">TODAY'S RECOVERY PLAN</p>
+                    <p className="text-[#dce4e4] text-sm">{burnout.recovery_plan}</p>
+                  </div>
+                )}
+
+                {burnout.encouragement && (
+                  <p className="text-white italic text-sm text-center py-2 border-t border-white/5">
+                    "{burnout.encouragement}"
+                  </p>
+                )}
+              </div>
+            );
+          })() : null}
+        </Section>
       )}
     </div>
   );

@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
   LayoutDashboard, CheckSquare, Timer, BarChart3, Activity,
-  Bot, Trophy, User, Settings, LogOut, Zap, Flame,
+  Bot, Trophy, User, Settings, LogOut, Zap, Flame, Smile, BookOpen, Clock,
 } from 'lucide-react';
 import { useAppLogout } from '../hook/useUserProfile';
 
@@ -12,6 +12,9 @@ const NAV = [
   { to: '/tasks',       icon: CheckSquare,      label: 'Tasks' },
   { to: '/focus',       icon: Timer,            label: 'Focus' },
   { to: '/analytics',  icon: BarChart3,         label: 'Analytics' },
+  { to: '/mood',       icon: Smile,             label: 'Mood' },
+  { to: '/journal',    icon: BookOpen,           label: 'Journal' },
+  { to: '/history',    icon: Clock,              label: 'History' },
   { to: '/heatmap',    icon: Activity,          label: 'Heatmap' },
   { to: '/ai-coach',   icon: Bot,               label: 'AI Coach' },
   { to: '/leaderboard',icon: Trophy,            label: 'Leaderboard' },

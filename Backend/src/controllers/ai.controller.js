@@ -2,6 +2,8 @@ import {
   analyzeProductivity,
   getFocusSuggestions,
   generateWeeklyReport,
+  getAdaptiveTimer,
+  detectBurnout,
 } from "../services/ai.service.js";
 import focusSessionModel from "../models/focussession.model.js";
 import taskModel from "../models/task.model.js";
@@ -270,5 +272,117 @@ export const weeklyReport = async (req, res) => {
       message: error.message || "Failed to generate weekly report",
       success: false,
     });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// GET /api/ai/adaptive-timer
+// Pulls 14-day session patterns and returns AI-suggested optimal duration
+// ---------------------------------------------------------------------------
+export const adaptiveTimer = async (req, res) => {
+  if (!checkApiKey(res)) return;
+  try {
+    const userId = req.user._id;
+    const fourteenDaysAgo = new Date();
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+
+    const [agg] = await focusSessionModel.aggregate([
+      { $match: { user: userId, startedAt: { $gte: fourteenDaysAgo } } },
+      {
+        $group: {
+          _id: null,
+          avgSessionLength: { $avg: "$duration" },
+          totalSessions:    { $sum: 1 },
+          completedSessions:{ $sum: { $cond: ["$completed", 1, 0] } },
+          totalDistractions:{ $sum: "$distractions" },
+          preferredMode:    { $last: "$timerType" },
+        },
+      },
+    ]);
+
+    const statsDoc = await UserStatsModel.findOne({ user: userId }).select("currentStreak totalSessionsCompleted");
+
+    const totalSessions    = agg?.totalSessions    || 0;
+    const completedSessions= agg?.completedSessions|| 0;
+    const completionRate   = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0;
+    const avgDistractions  = totalSessions > 0 ? Number(((agg?.totalDistractions || 0) / totalSessions).toFixed(1)) : 0;
+
+    const suggestion = await getAdaptiveTimer({
+      avgSessionLength: Math.round(agg?.avgSessionLength || 25),
+      completionRate,
+      avgDistractions,
+      preferredMode: agg?.preferredMode || "pomodoro",
+      currentStreak: statsDoc?.currentStreak || 0,
+      totalSessions: statsDoc?.totalSessionsCompleted || 0,
+    });
+
+    return res.status(200).json({
+      success: true,
+      suggestion,
+      basedOn: { totalSessions, completionRate, avgDistractions },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message || "Adaptive timer failed", success: false });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// GET /api/ai/burnout-check
+// Analyzes last 7 days for burnout/overwork signals
+// ---------------------------------------------------------------------------
+export const burnoutCheck = async (req, res) => {
+  if (!checkApiKey(res)) return;
+  try {
+    const userId = req.user._id;
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const [agg] = await focusSessionModel.aggregate([
+      { $match: { user: userId, startedAt: { $gte: sevenDaysAgo } } },
+      {
+        $group: {
+          _id: null,
+          sessions:          { $sum: 1 },
+          completed:         { $sum: { $cond: ["$completed", 1, 0] } },
+          totalDistractions: { $sum: "$distractions" },
+          avgSessionLength:  { $avg: "$duration" },
+        },
+      },
+    ]);
+
+    // Recent mood trend (last 5)
+    const recentMoods = await focusSessionModel
+      .find({ user: userId, mood: { $exists: true, $ne: null } })
+      .sort({ startedAt: -1 })
+      .limit(5)
+      .select("mood")
+      .lean();
+    const moodTrend = recentMoods.map((s) => s.mood).join(", ") || "not tracked";
+
+    const statsDoc = await UserStatsModel.findOne({ user: userId }).select("currentStreak");
+
+    const sessions   = agg?.sessions   || 0;
+    const completed  = agg?.completed  || 0;
+    const completionRate = sessions > 0 ? Math.round((completed / sessions) * 100) : 100;
+    const avgDistractions= sessions > 0 ? Number(((agg?.totalDistractions || 0) / sessions).toFixed(1)) : 0;
+
+    const result = await detectBurnout({
+      avgDistractions7d:  avgDistractions,
+      sessionsLast7d:     sessions,
+      completionRate7d:   completionRate,
+      streak:             statsDoc?.currentStreak || 0,
+      avgSessionLength:   Math.round(agg?.avgSessionLength || 0),
+      moodTrend,
+    });
+
+    return res.status(200).json({
+      success: true,
+      burnout: result,
+      rawData: { sessions, completionRate, avgDistractions },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message || "Burnout check failed", success: false });
   }
 };

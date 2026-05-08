@@ -4,6 +4,8 @@ import {
   productivityAnalysis,
   focusSuggestions,
   weeklyReport,
+  adaptiveTimer,
+  burnoutCheck,
 } from "../controllers/ai.controller.js";
 
 const aiRouter = Router();
@@ -41,5 +43,19 @@ aiRouter.post("/focus-suggestions", authenticateUser, focusSuggestions);
  * @access  Private
  */
 aiRouter.post("/weekly-report", authenticateUser, weeklyReport);
+
+/**
+ * @route   GET /api/ai/adaptive-timer
+ * @desc    Returns AI-suggested optimal focus duration based on user's 14-day session patterns.
+ * @access  Private
+ */
+aiRouter.get("/adaptive-timer", authenticateUser, adaptiveTimer);
+
+/**
+ * @route   GET /api/ai/burnout-check
+ * @desc    Detects burnout/overwork signals from last 7 days of activity.
+ * @access  Private
+ */
+aiRouter.get("/burnout-check", authenticateUser, burnoutCheck);
 
 export default aiRouter;

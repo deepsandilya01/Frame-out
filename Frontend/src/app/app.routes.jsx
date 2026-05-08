@@ -21,6 +21,9 @@ import AICoachPage      from '../features/user/pages/AICoachPage';
 import LeaderboardPage  from '../features/user/pages/LeaderboardPage';
 import ProfilePage      from '../features/user/pages/ProfilePage';
 import SettingsPage     from '../features/user/pages/SettingsPage';
+import MoodAnalyticsPage from '../features/user/pages/MoodAnalyticsPage';
+import JournalPage      from '../features/user/pages/JournalPage';
+import HistoryPage      from '../features/user/pages/HistoryPage';
 
 // Route Guards
 const PrivateRoute = ({ children }) => {
@@ -66,8 +69,11 @@ export const router = createBrowserRouter([
       { path: 'heatmap',     element: <HeatmapPage /> },
       { path: 'ai-coach',    element: <AICoachPage /> },
       { path: 'leaderboard', element: <LeaderboardPage /> },
-      { path: 'profile',     element: <ProfilePage /> },
-      { path: 'settings',    element: <SettingsPage /> },
+      { path: 'profile',      element: <ProfilePage /> },
+      { path: 'settings',     element: <SettingsPage /> },
+      { path: 'mood',         element: <MoodAnalyticsPage /> },
+      { path: 'journal',      element: <JournalPage /> },
+      { path: 'history',      element: <HistoryPage /> },
     ],
   },
 
