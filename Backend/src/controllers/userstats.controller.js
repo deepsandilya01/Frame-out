@@ -252,7 +252,6 @@ export const getLeaderboard = async (req, res) => {
   try {
     const top = await UserStatsModel.find()
       .sort({ xp: -1 })
-      .limit(10)
       .populate("user", "fullname");
 
     const leaderboard = top.map((s, i) => ({

@@ -32,7 +32,7 @@ export const productivityAnalysis = async (req, res) => {
 
   try {
     const userId = req.user._id;
-    const { period = "this week" } = req.body;
+    const { period = "this week" } = req.body || {};
 
     // Gather last 7 days of data
     const sevenDaysAgo = new Date();
@@ -121,7 +121,7 @@ export const focusSuggestions = async (req, res) => {
 
   try {
     const userId = req.user._id;
-    const { tasksBacklog } = req.body;
+    const { tasksBacklog } = req.body || {};
 
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
