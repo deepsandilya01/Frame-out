@@ -39,6 +39,10 @@ if (!process.env.REDIS_PORT) {
 if (!process.env.REDIS_HOST) {
   throw new Error("REDIS_HOST is not defined in environment variables");
 }
+
+if (!process.env.MISTRAL_API_KEY) {
+  console.warn("⚠️  MISTRAL_API_KEY is not set — AI endpoints will not work");
+}
 export const config = {
   MONGO_URI: process.env.MONGO_URI,
   JWT_SECRET: process.env.JWT_SECRET,
@@ -50,4 +54,5 @@ export const config = {
   REDIS_PASSWORD: process.env.REDIS_PASSWORD,
   REDIS_PORT: process.env.REDIS_PORT,
   REDIS_HOST: process.env.REDIS_HOST,
+  MISTRAL_API_KEY: process.env.MISTRAL_API_KEY,
 };

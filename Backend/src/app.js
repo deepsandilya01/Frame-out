@@ -6,7 +6,12 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { config } from "./config/config.js";
 import authRouter from "./routes/auth.routes.js";
-
+import taskRouter from "./routes/task.routes.js";
+import focusRouter from "./routes/focussession.routes.js";
+import analyticsRouter from "./routes/analytics.routes.js";
+import heatmapRouter from "./routes/heatmap.routes.js";
+import statsRouter from "./routes/userstats.routes.js";
+import aiRouter from "./routes/ai.routes.js";
 
 const app = express();
 
@@ -17,7 +22,7 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
   }),
 );
@@ -42,5 +47,11 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/tasks", taskRouter);
+app.use("/api/focus", focusRouter);
+app.use("/api/analytics", analyticsRouter);
+app.use("/api/heatmap", heatmapRouter);
+app.use("/api/userstats", statsRouter);
+app.use("/api/ai", aiRouter);
 
 export default app;

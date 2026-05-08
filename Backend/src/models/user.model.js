@@ -23,6 +23,42 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  streak: {
+    type: Number,
+    default: 0,
+  },
+  level: {
+    type: Number,
+    default: 1,
+  },
+  rank: {
+    type: String,
+    default: "Newbie",
+  },
+  totalFocusTime: {
+    type: Number,
+    default: 0,
+  },
+  totalSessions: {
+    type: Number,
+    default: 0,
+  },
+  longestStreak: {
+    type: Number,
+    default: 0,
+  },
+  totalDistractions: {
+    type: Number,
+    default: 0,
+  },
+  lastStreakReset: {
+    type: Date,
+    default: Date.now,
+  },  
+  rankUpdatedAt: {
+    type: Date,
+    default: Date.now,
+  },
   resetPasswordToken: String,
   resetPasswordExpire: Date,
 });
@@ -38,6 +74,6 @@ userSchema.methods.comparePassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
-const userModel = mongoose.model("user", userSchema);
+const userModel = mongoose.model("User", userSchema);
 
 export default userModel;
