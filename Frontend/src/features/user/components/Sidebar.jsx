@@ -4,28 +4,27 @@ import { useSelector } from 'react-redux';
 import {
   LayoutDashboard, CheckSquare, Timer, BarChart3, Activity,
   Bot, Trophy, User, Settings, LogOut, Zap, Flame, Smile, BookOpen, Clock,
+  Menu, X
 } from 'lucide-react';
 import { useAppLogout } from '../hook/useUserProfile';
+import { FrameOutLogo } from '../../../components/FrameOutLogo';
 
 const NAV = [
   { to: '/dashboard',   icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/tasks',       icon: CheckSquare,      label: 'Tasks' },
   { to: '/focus',       icon: Timer,            label: 'Focus' },
-  { to: '/analytics',  icon: BarChart3,         label: 'Analytics' },
-  { to: '/mood',       icon: Smile,             label: 'Mood' },
-  { to: '/journal',    icon: BookOpen,           label: 'Journal' },
-  { to: '/history',    icon: Clock,              label: 'History' },
-  { to: '/heatmap',    icon: Activity,          label: 'Heatmap' },
-  { to: '/ai-coach',   icon: Bot,               label: 'AI Coach' },
-  { to: '/leaderboard',icon: Trophy,            label: 'Leaderboard' },
+  { to: '/insights',    icon: BarChart3,        label: 'Insights' }, // Merged Heatmap/Analytics/History
+  { to: '/ai-coach',    icon: Bot,              label: 'AI Coach' },
+  { to: '/reflect',     icon: BookOpen,         label: 'Reflect' },  // Merged Journal/Mood
 ];
 
 const BOTTOM_NAV = [
-  { to: '/profile',  icon: User,     label: 'Profile' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
+  { to: '/leaderboard',icon: Trophy,            label: 'Leaderboard' },
+  { to: '/settings',   icon: Settings,          label: 'Settings' },
 ];
 
 export default function Sidebar() {
+  const [isOpen, setIsOpen] = useState(false);
   const { handleLogout } = useAppLogout();
   const user  = useSelector(s => s.auth.user);
   const stats = useSelector(s => s.user.userStats.data);
@@ -42,6 +41,7 @@ export default function Sidebar() {
     return (
       <NavLink
         to={to}
+        onClick={() => setIsOpen(false)}
         className={`group flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 relative overflow-hidden ${
           active
             ? 'text-accent bg-accent-dim border border-accent/20'
@@ -59,16 +59,42 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-60 flex flex-col z-40"
-           style={{ background: 'rgba(8,8,8,0.95)', backdropFilter: 'blur(20px)', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+    <>
+      {/* Mobile Toggle Button */}
+      <button 
+        onClick={() => setIsOpen(true)}
+        className="md:hidden fixed top-4 left-4 z-50 p-2.5 glass-glow rounded-xl text-white active:scale-95 transition-all"
+      >
+        <Menu size={22} />
+      </button>
+
+      {/* Backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      <aside className={`fixed top-0 h-screen w-60 flex flex-col z-50 transition-all duration-300 border-r border-white/5 ${
+        isOpen ? 'left-0' : '-left-full md:left-0'
+      }`}
+      style={{ background: 'rgba(8,8,8,0.98)', backdropFilter: 'blur(20px)' }}>
+        
+        {/* Close button (mobile only) */}
+        <button 
+          onClick={() => setIsOpen(false)}
+          className="md:hidden absolute top-5 right-4 text-[#849495] hover:text-white"
+        >
+          <X size={20} />
+        </button>
       {/* Logo */}
       <div className="px-5 pt-6 pb-4">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-               style={{ background: 'rgba(0,245,255,0.1)', border: '1px solid rgba(0,245,255,0.3)', boxShadow: '0 0 12px rgba(0,245,255,0.2)' }}>
-            <Zap size={14} className="text-accent" />
-          </div>
-          <span className="text-white font-bold text-sm tracking-tight">Frame<span className="text-accent">-Out</span></span>
+        <div className="flex items-center gap-2.5 group cursor-pointer">
+          <FrameOutLogo className="text-white" size={24} />
+          <span className="text-white font-bold text-lg tracking-tight">
+            Frame-Out
+          </span>
         </div>
       </div>
 
@@ -120,6 +146,7 @@ export default function Sidebar() {
           )}
         </div>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

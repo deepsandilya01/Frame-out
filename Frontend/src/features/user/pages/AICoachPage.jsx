@@ -100,8 +100,8 @@ export default function AICoachPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-accent-dim flex items-center justify-center"
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-accent-dim flex items-center justify-center shrink-0"
              style={{ border: '1px solid rgba(0,245,255,0.3)' }}>
           <Brain size={20} className="text-accent" />
         </div>
@@ -112,10 +112,10 @@ export default function AICoachPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 glass rounded-full p-1 w-fit">
+      <div className="flex flex-wrap gap-1 glass rounded-2xl sm:rounded-full p-1 w-full sm:w-fit">
         {TABS.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium transition-all ${
+            className={`flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl sm:rounded-full text-[11px] sm:text-xs font-medium transition-all flex-1 sm:flex-none ${
               tab === t.key
                 ? t.key === 'burnout'
                   ? 'bg-red-500/10 text-red-400 border border-red-400/20'
@@ -253,7 +253,7 @@ export default function AICoachPage() {
               {report.next_week_plan && (
                 <div className="glass rounded-xl p-4">
                   <p className="label-eyebrow mb-3">NEXT WEEK PLAN</p>
-                  <div className="grid grid-cols-3 gap-3 mb-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                     <div className="text-center">
                       <p className="text-accent font-bold text-xl">{report.next_week_plan.focus_goal_hours}h</p>
                       <p className="text-[#849495] text-xs">Focus Goal</p>

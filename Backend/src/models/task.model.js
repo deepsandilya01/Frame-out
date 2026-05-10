@@ -56,6 +56,10 @@ const taskSchema = new mongoose.Schema(
   }
 );
 
+// Indexes for fast retrieval by user and filtering by status/date
+taskSchema.index({ user: 1, createdAt: -1 });
+taskSchema.index({ user: 1, status: 1 });
+
 const taskModel = mongoose.model("Task", taskSchema);
 
 export default taskModel;

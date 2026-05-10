@@ -1,9 +1,8 @@
 import axios from 'axios';
 
-// Create axios instance with base URL and credentials handling
 const apiClient = axios.create({
-  baseURL: 'http://localhost:3000/api/auth',
-  withCredentials: true, // Important for sending/receiving cookies
+  baseURL: '/api/auth',
+  withCredentials: true,
 });
 
 export const authService = {
@@ -48,6 +47,6 @@ export const authService = {
   },
   
   getGoogleAuthUrl: () => {
-    return 'http://localhost:3000/api/auth/google';
+    return '/api/auth/google';
   }
 };

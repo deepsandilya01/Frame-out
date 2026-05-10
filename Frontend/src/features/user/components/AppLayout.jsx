@@ -36,6 +36,19 @@ export default function AppLayout() {
     root.setAttribute('data-theme', theme);
   }, [theme]);
 
+  // Mark activity on mount
+  useEffect(() => {
+    const track = async () => {
+      try {
+        const { userService } = await import('../service/user.service');
+        await userService.markActive();
+      } catch (e) {
+        console.warn('Activity tracking failed:', e.message);
+      }
+    };
+    track();
+  }, []);
+
   return (
     <div className="min-h-screen" style={{ background: '#080808' }}>
       {/* Ambient background orbs */}
@@ -48,8 +61,8 @@ export default function AppLayout() {
 
       <Sidebar />
 
-      <main className="pl-60 min-h-screen relative z-10">
-        <div className="max-w-7xl mx-auto px-8 py-8">
+      <main className="md:pl-60 min-h-screen relative z-10 w-full overflow-x-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-20 pb-8 md:py-8">
           <Outlet />
         </div>
       </main>

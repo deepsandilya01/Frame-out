@@ -2,14 +2,7 @@ import mongoose from "mongoose";
 
 /**
  * GitHub-style Activity Heatmap
- * One document per user per day (stored as "YYYY-MM-DD" string for easy lookup).
- *
- * Level thresholds (like GitHub's 4-shade system):
- *   0 → no activity   (0 min)
- *   1 → light         (1–30 min)
- *   2 → moderate      (31–60 min)
- *   3 → high          (61–120 min)
- *   4 → intense       (121+ min)
+ * One document per user per day.
  */
 const heatmapSchema = new mongoose.Schema(
   {
@@ -17,37 +10,36 @@ const heatmapSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
     },
 
     date: {
       type: String,
       required: true,
-      index: true,
     },
 
     focusMinutes: {
       type: Number,
       default: 0,
-      min: 0,
     },
 
     sessionsCompleted: {
       type: Number,
       default: 0,
-      min: 0,
     },
 
     tasksCompleted: {
       type: Number,
       default: 0,
-      min: 0,
     },
 
     distractions: {
       type: Number,
       default: 0,
-      min: 0,
+    },
+
+    wasActive: {
+      type: Boolean,
+      default: false,
     },
 
     level: {
@@ -62,10 +54,11 @@ const heatmapSchema = new mongoose.Schema(
   }
 );
 
-// Unique index: one entry per user per day
+// Indexes
 heatmapSchema.index({ user: 1, date: 1 }, { unique: true });
+heatmapSchema.index({ user: 1, wasActive: 1 });
 
-// Auto-compute level before save
+// Auto-compute level
 heatmapSchema.pre("save", function () {
   this.level = computeLevel(this.focusMinutes);
 });
@@ -74,8 +67,9 @@ heatmapSchema.pre("findOneAndUpdate", function () {
   const update = this.getUpdate();
   const mins = update?.$set?.focusMinutes ?? update?.focusMinutes;
   if (mins !== undefined) {
-    if (update.$set) update.$set.level = computeLevel(mins);
-    else update.level = computeLevel(mins);
+    const level = computeLevel(mins);
+    if (update.$set) update.$set.level = level;
+    else update.level = level;
   }
 });
 

@@ -15,15 +15,12 @@ import AppLayout        from '../features/user/components/AppLayout';
 import DashboardPage    from '../features/user/pages/DashboardPage';
 import TasksPage        from '../features/user/pages/TasksPage';
 import FocusPage        from '../features/user/pages/FocusPage';
-import AnalyticsPage    from '../features/user/pages/AnalyticsPage';
-import HeatmapPage      from '../features/user/pages/HeatmapPage';
+import InsightsPage     from '../features/user/pages/InsightsPage';
+import ReflectPage      from '../features/user/pages/ReflectPage';
 import AICoachPage      from '../features/user/pages/AICoachPage';
 import LeaderboardPage  from '../features/user/pages/LeaderboardPage';
 import ProfilePage      from '../features/user/pages/ProfilePage';
 import SettingsPage     from '../features/user/pages/SettingsPage';
-import MoodAnalyticsPage from '../features/user/pages/MoodAnalyticsPage';
-import JournalPage      from '../features/user/pages/JournalPage';
-import HistoryPage      from '../features/user/pages/HistoryPage';
 
 // Route Guards
 const PrivateRoute = ({ children }) => {
@@ -65,15 +62,18 @@ export const router = createBrowserRouter([
       { path: 'dashboard',   element: <DashboardPage /> },
       { path: 'tasks',       element: <TasksPage /> },
       { path: 'focus',       element: <FocusPage /> },
-      { path: 'analytics',   element: <AnalyticsPage /> },
-      { path: 'heatmap',     element: <HeatmapPage /> },
+      { path: 'insights',    element: <InsightsPage /> },
+      { path: 'reflect',     element: <ReflectPage /> },
       { path: 'ai-coach',    element: <AICoachPage /> },
       { path: 'leaderboard', element: <LeaderboardPage /> },
       { path: 'profile',      element: <ProfilePage /> },
       { path: 'settings',     element: <SettingsPage /> },
-      { path: 'mood',         element: <MoodAnalyticsPage /> },
-      { path: 'journal',      element: <JournalPage /> },
-      { path: 'history',      element: <HistoryPage /> },
+      // Redirects for backward compatibility (optional but good for stability)
+      { path: 'analytics',   element: <Navigate to="/insights" replace /> },
+      { path: 'heatmap',     element: <Navigate to="/insights" replace /> },
+      { path: 'history',     element: <Navigate to="/insights" replace /> },
+      { path: 'mood',         element: <Navigate to="/reflect" replace /> },
+      { path: 'journal',      element: <Navigate to="/reflect" replace /> },
     ],
   },
 

@@ -336,4 +336,31 @@
   ::-webkit-scrollbar-thumb:hover {
     background: rgba(255,255,255,0.2);
   }
+
+  /* Responsive Typography Overrides */
+  @media (max-width: 640px) {
+    .headline-massive {
+      font-size: 3rem;
+      line-height: 1;
+    }
+    .headline-large {
+      font-size: 2rem;
+      line-height: 1.1;
+    }
+    .glass {
+      padding: 1.25rem !important;
+    }
+    .glass-strong {
+      padding: 1.5rem !important;
+    }
+  }
+
+  /* Custom Utilities */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }

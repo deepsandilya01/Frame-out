@@ -85,10 +85,10 @@ export default function TasksPage() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex gap-1 glass rounded-full p-1 w-fit">
+      <div className="flex gap-1 glass rounded-full p-1 overflow-x-auto scrollbar-hide w-full sm:w-fit whitespace-nowrap px-2">
         {['all', 'pending', 'in-progress', 'completed'].map(f => (
           <button key={f} onClick={() => setFilter(f)}
-            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all flex-shrink-0 ${
               filter === f ? 'bg-accent-dim text-accent border border-accent/20' : 'text-[#849495] hover:text-white'
             }`}>
             {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}

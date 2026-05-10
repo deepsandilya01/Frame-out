@@ -29,7 +29,7 @@ export default function SettingsPage() {
           <Palette size={16} className="text-accent" />
           <h2 className="text-white font-semibold">Accent Theme</h2>
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {THEMES.map(t => (
             <button key={t.id} onClick={() => dispatch(setTheme(t.id))}
               className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
@@ -41,7 +41,7 @@ export default function SettingsPage() {
                    style={{ background: t.color, boxShadow: `0 0 8px ${t.color}40` }}>
                 {theme === t.id && <Check size={10} className="text-black" />}
               </div>
-              <span className="text-sm text-[#dce4e4]">{t.label}</span>
+              <span className="text-sm text-[#dce4e4] font-medium">{t.label}</span>
             </button>
           ))}
         </div>

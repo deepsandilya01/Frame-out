@@ -1,146 +1,143 @@
 import taskModel from "../models/task.model.js";
+import { gamificationService } from "../services/gamification.service.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
-// ---------------------------------------------------------------------------
-// POST /api/tasks/create
-// ---------------------------------------------------------------------------
-export const createTask = async (req, res) => {
-  try {
-    const { title, description, priority, status, deadline, tags } = req.body;
+// @desc    Get all tasks
+// @route   GET /api/tasks/view
+export const viewTasks = asyncHandler(async (req, res) => {
+  const { status, priority, search } = req.query;
+  const query = { user: req.user._id };
 
-    const task = await taskModel.create({
-      user: req.user._id,
-      title,
-      description,
-      priority,
-      status,
-      deadline,
-      tags,
-    });
+  if (status) query.status = status;
+  if (priority) query.priority = priority;
+  if (search) query.title = { $regex: search, $options: "i" };
 
-    return res.status(201).json({
-      message: "Task created successfully",
-      success: true,
-      task,
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Server error", success: false });
+  const tasks = await taskModel.find(query).sort({ createdAt: -1 }).lean();
+
+  res.status(200).json({
+    message: "Tasks retrieved successfully",
+    success: true,
+    tasks,
+  });
+});
+
+// @desc    Create a task
+// @route   POST /api/tasks/create
+export const createTask = asyncHandler(async (req, res) => {
+  const { title, description, priority, deadline, tags } = req.body;
+
+  if (!title) {
+    return res.status(400).json({ message: "Title is required", success: false });
   }
-};
 
-// ---------------------------------------------------------------------------
-// GET /api/tasks/view   (only the logged-in user's tasks)
-// Query: ?status=pending&priority=high&page=1&limit=10
-// ---------------------------------------------------------------------------
-export const viewTasks = async (req, res) => {
-  try {
-    const { status, priority, page = 1, limit = 20 } = req.query;
+  const task = await taskModel.create({
+    user: req.user._id,
+    title,
+    description,
+    priority,
+    deadline,
+    tags,
+  });
 
-    const filter = { user: req.user._id };
-    if (status)   filter.status   = status;
-    if (priority) filter.priority = priority;
+  res.status(201).json({
+    message: "Task created successfully",
+    success: true,
+    task,
+  });
+});
 
-    const tasks = await taskModel
-      .find(filter)
-      .sort({ createdAt: -1 })
-      .skip((Number(page) - 1) * Number(limit))
-      .limit(Number(limit));
+// @desc    Get task by ID
+// @route   GET /api/tasks/:id
+export const getTaskById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const task = await taskModel.findOne({ _id: id, user: req.user._id }).lean();
 
-    const total = await taskModel.countDocuments(filter);
-
-    return res.status(200).json({
-      message: "Tasks fetched successfully",
-      success: true,
-      tasks,
-      pagination: { page: Number(page), limit: Number(limit), total },
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Server error", success: false });
+  if (!task) {
+    return res.status(404).json({ message: "Task not found", success: false });
   }
-};
 
-// ---------------------------------------------------------------------------
-// PUT /api/tasks/update/:id
-// ---------------------------------------------------------------------------
-export const updateTask = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { title, description, priority, status, deadline, tags } = req.body;
+  res.status(200).json({
+    message: "Task retrieved successfully",
+    success: true,
+    task,
+  });
+});
 
-    const task = await taskModel.findOneAndUpdate(
-      { _id: id, user: req.user._id },   // ownership check
-      { title, description, priority, status, deadline, tags },
-      { new: true, runValidators: true }
-    );
+// @desc    Update task status
+// @route   PATCH /api/tasks/:id/status
+export const updateTaskStatus = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
 
-    if (!task) {
-      return res.status(404).json({ message: "Task not found", success: false });
-    }
-
-    return res.status(200).json({
-      message: "Task updated successfully",
-      success: true,
-      task,
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Server error", success: false });
+  if (!["pending", "in-progress", "completed"].includes(status)) {
+    return res.status(400).json({ message: "Invalid status", success: false });
   }
-};
 
-// ---------------------------------------------------------------------------
-// DELETE /api/tasks/delete/:id
-// ---------------------------------------------------------------------------
-export const deleteTask = async (req, res) => {
-  try {
-    const { id } = req.params;
+  const task = await taskModel.findOne({ _id: id, user: req.user._id });
 
-    const task = await taskModel.findOneAndDelete({ _id: id, user: req.user._id });
-
-    if (!task) {
-      return res.status(404).json({ message: "Task not found", success: false });
-    }
-
-    return res.status(200).json({
-      message: "Task deleted successfully",
-      success: true,
-      task,
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Server error", success: false });
+  if (!task) {
+    return res.status(404).json({ message: "Task not found", success: false });
   }
-};
 
-// ---------------------------------------------------------------------------
-// PATCH /api/tasks/:id/status
-// ---------------------------------------------------------------------------
-export const updateTaskStatus = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body;
+  const oldStatus = task.status;
+  task.status = status;
 
-    const task = await taskModel.findOneAndUpdate(
-      { _id: id, user: req.user._id },   // ownership check
-      {
-        status,
-        ...(status === "completed" ? { completedAt: new Date() } : {}),
-      },
-      { new: true }
-    );
-
-    if (!task) {
-      return res.status(404).json({ message: "Task not found", success: false });
-    }
-
-    return res.status(200).json({
-      message: "Task status updated successfully",
-      success: true,
-      task,
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Server error", success: false });
+  let gamification = null;
+  if (status === "completed" && oldStatus !== "completed") {
+    task.completedAt = new Date();
+    // Award XP via Service
+    const result = await gamificationService.awardTaskRewards(req.user._id);
+    gamification = {
+      xpGained: 10,
+      level: result.stats.level,
+      leveledUp: result.leveled,
+      newBadges: result.newBadges,
+    };
   }
-};
+
+  await task.save();
+
+  res.status(200).json({
+    message: "Task status updated successfully",
+    success: true,
+    task,
+    gamification,
+  });
+});
+
+// @desc    Update task details
+// @route   PUT /api/tasks/update/:id
+export const updateTask = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const task = await taskModel.findOneAndUpdate(
+    { _id: id, user: req.user._id },
+    { $set: req.body },
+    { new: true, runValidators: true }
+  );
+
+  if (!task) {
+    return res.status(404).json({ message: "Task not found", success: false });
+  }
+
+  res.status(200).json({
+    message: "Task updated successfully",
+    success: true,
+    task,
+  });
+});
+
+// @desc    Delete task
+// @route   DELETE /api/tasks/delete/:id
+export const deleteTask = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const task = await taskModel.findOneAndDelete({ _id: id, user: req.user._id });
+
+  if (!task) {
+    return res.status(404).json({ message: "Task not found", success: false });
+  }
+
+  res.status(200).json({
+    message: "Task deleted successfully",
+    success: true,
+  });
+});

@@ -140,9 +140,9 @@ export default function DashboardPage() {
       )}
 
       {/* AI Insight + Chart row */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         {/* AI Card */}
-        <div className="content-card col-span-2 glass rounded-2xl p-5 relative overflow-hidden"
+        <div className="content-card col-span-1 md:col-span-2 glass rounded-2xl p-5 relative overflow-hidden"
              style={{ borderLeft: '2px solid var(--theme-accent)' }}>
           <div className="absolute top-0 left-0 w-full h-0.5"
                style={{ background: 'linear-gradient(to right, var(--theme-accent), transparent)' }} />
@@ -170,10 +170,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Weekly Focus Chart */}
-        <div className="content-card col-span-3 glass rounded-2xl p-5">
+        <div className="content-card col-span-1 md:col-span-3 glass rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <span className="label-eyebrow">WEEKLY FOCUS</span>
-            <Link to="/analytics" className="text-xs text-accent hover:underline">View all →</Link>
+            <Link to="/insights" className="text-xs text-accent hover:underline">View all →</Link>
           </div>
           <ResponsiveContainer width="100%" height={120}>
             <BarChart data={weekData} barSize={20}>
@@ -196,14 +196,14 @@ export default function DashboardPage() {
       </div>
 
       {/* Daily Missions + Recent Tasks row */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         {/* Daily Missions widget */}
-        <div className="col-span-2">
+        <div className="col-span-1 md:col-span-2">
           <DailyMissions onXPEarned={(xp) => { /* toast or stat refresh */ }} />
         </div>
 
         {/* Recent Tasks */}
-        <div className="content-card col-span-3 glass rounded-2xl p-5">
+        <div className="content-card col-span-1 md:col-span-3 glass rounded-2xl p-5">
         <div className="flex items-center justify-between mb-4">
           <span className="label-eyebrow">ACTIVE TASKS</span>
           <Link to="/tasks" className="text-xs text-accent hover:underline">View all →</Link>

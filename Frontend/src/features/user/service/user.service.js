@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-const BASE = 'http://localhost:3000/api';
+const BASE = '/api';
 
 const api = axios.create({
   baseURL: BASE,
-  withCredentials: true, // Uses HttpOnly cookies set by backend on login
+  withCredentials: true,
 });
 
 // ─── AUTH ───────────────────────────────────────────────────────────────────
@@ -40,6 +40,7 @@ export const userService = {
 
   // ─── HEATMAP ──────────────────────────────────────────────────────────────
   syncHeatmap:    () => api.post('/heatmap/sync').then(r => r.data),
+  markActive:     () => api.post('/heatmap/active').then(r => r.data),
   getHeatmapYear: () => api.get('/heatmap/year').then(r => r.data),
   getHeatmapToday:() => api.get('/heatmap/today').then(r => r.data),
   getHeatmapRange:(from, to) => api.get('/heatmap/range', { params: { from, to } }).then(r => r.data),

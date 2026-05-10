@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { Play, Square, RotateCcw, Zap, Flame, Maximize2, Wind, Brain, Volume2, VolumeX } from 'lucide-react';
+import { Play, Square, RotateCcw, Zap, Flame, Maximize2, Wind, Brain, Volume2, VolumeX, Target, Clock } from 'lucide-react';
 import { useFocus } from '../hook/useFocus';
 import DeepWorkMode     from '../components/DeepWorkMode';
 import BreathingWidget  from '../components/BreathingWidget';
@@ -12,7 +12,7 @@ function CircularTimer({ seconds, totalSeconds, size = 200 }) {
   const pct  = totalSeconds > 0 ? seconds / totalSeconds : 0;
   const dash = circ * (1 - pct);
   return (
-    <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+    <svg width="100%" height="100%" viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
       <circle cx={size/2} cy={size/2} r={r} fill="none"
               stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
       <circle cx={size/2} cy={size/2} r={r} fill="none"
@@ -178,14 +178,16 @@ export default function FocusPage() {
       {breathing && <BreathingWidget onClose={() => setBreathing(false)} />}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Focus Session</h1>
-          <p className="text-[#849495] text-sm mt-0.5">
-            {stats ? `${stats.totalSessionsCompleted || 0} sessions · ${stats.totalFocusMinutes || 0} min total` : 'Loading…'}
-          </p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Focus Session</h1>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-[#849495] text-xs sm:text-sm">
+            <span className="flex items-center gap-1"><Target size={12} className="text-accent" /> {stats?.totalSessionsCompleted || 0} sessions</span>
+            <span className="w-1 h-1 rounded-full bg-white/10 hidden sm:inline" />
+            <span className="flex items-center gap-1"><Clock size={12} className="text-accent" /> {stats?.totalFocusMinutes || 0} min total</span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* AI Adaptive Timer */}
           {!running && !activeSession && (
             <button
@@ -213,9 +215,9 @@ export default function FocusPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Timer Card */}
-        <div className="col-span-2 glass-glow rounded-3xl p-8 flex flex-col items-center">
+        <div className="lg:col-span-2 glass-glow rounded-3xl p-6 sm:p-8 flex flex-col items-center">
           {/* Mode Toggle */}
           {!running && !activeSession && (
             <div className="flex gap-1 glass rounded-full p-1 mb-8">
@@ -231,13 +233,13 @@ export default function FocusPage() {
           )}
 
           {/* Circular Timer */}
-          <div className="relative flex items-center justify-center mb-6">
-            <CircularTimer seconds={timeLeft || (focusDuration * 60)} totalSeconds={totalSec || (focusDuration * 60)} size={220} />
+          <div className="relative flex items-center justify-center mb-6 w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64">
+            <CircularTimer seconds={timeLeft || (focusDuration * 60)} totalSeconds={totalSec || (focusDuration * 60)} size={260} />
             <div className="absolute text-center">
-              <div className="text-5xl font-bold text-white tracking-tighter tabular-nums">
+              <div className="text-4xl sm:text-5xl font-bold text-white tracking-tighter tabular-nums">
                 {fmt(timeLeft || focusDuration * 60)}
               </div>
-              <div className="text-[#849495] text-xs mt-1 uppercase tracking-widest">{phase} phase</div>
+              <div className="text-[#849495] text-[10px] sm:text-xs mt-1 uppercase tracking-widest">{phase} phase</div>
             </div>
           </div>
 

@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { config } from "../config/config.js";
 import userModel from "../models/user.model.js";
+import redis from "../config/cache.js";
 
 export const authenticateUser = async (req, res, next) => {
   // Accept from cookie OR Authorization: Bearer <token>
@@ -10,46 +11,34 @@ export const authenticateUser = async (req, res, next) => {
   }
 
   if (!token) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: "Unauthorized: No token provided", success: false });
   }
 
   try {
+    // 1. Check Redis blocklist (for logged-out tokens)
+    try {
+      const isBlocked = await redis.get(`bl_${token}`);
+      if (isBlocked) {
+        return res.status(401).json({ message: "Unauthorized: Token is invalid", success: false });
+      }
+    } catch (redisErr) {
+      console.warn("Redis check skipped (connection error):", redisErr.message);
+    }
+
+    // 2. Verify JWT
     const decoded = jwt.verify(token, config.JWT_SECRET);
 
-    const user = await userModel.findById(decoded.id);
+    // 3. Find User
+    const user = await userModel.findById(decoded.id).select("-password"); // Exclude password for safety
 
     if (!user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: "Unauthorized: User not found", success: false });
     }
 
     req.user = user;
     next();
   } catch (err) {
-    console.log(err);
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-};
-
-export const authenticateSeller = async (req, res, next) => {
-  const token = req.cookies.token;
-
-  if (!token) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-
-  try {
-    const decoded = jwt.verify(token, config.JWT_SECRET);
-
-    const user = await userModel.findById(decoded.id);
-
-    if (!user) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    req.user = user;
-    next();
-  } catch (err) {
-    console.log(err);
-    return res.status(401).json({ message: "Unauthorized" });
+    console.error("Auth Middleware Error:", err.message);
+    return res.status(401).json({ message: "Unauthorized: Invalid token", success: false });
   }
 };

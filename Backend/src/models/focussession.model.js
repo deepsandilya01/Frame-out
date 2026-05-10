@@ -79,5 +79,8 @@ const focusSessionSchema = new mongoose.Schema(
   }
 );
 
+// Compound index for fast queries by user + date (History/Heatmap)
+focusSessionSchema.index({ user: 1, startedAt: -1 });
+
 const focusSessionModel = mongoose.model("FocusSession", focusSessionSchema);
 export default focusSessionModel;
