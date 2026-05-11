@@ -1,0 +1,227 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+:root {
+    --primary: #00F5FF;
+    --background: #0d1515;
+    --surface-low: #151d1d;
+    --surface-container: #192121;
+    --on-surface: #dce4e4;
+    --on-surface-variant: #b9caca;
+    --outline: rgba(255, 255, 255, 0.06);
+    --glass-bg: rgba(255, 255, 255, 0.03);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body.popup-body {
+    width: 320px;
+    background-color: var(--background);
+    color: var(--on-surface);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden;
+}
+
+.extension-container {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--outline);
+}
+
+.logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.brand-name {
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.1em;
+    color: #fff;
+}
+
+.version {
+    font-size: 10px;
+    color: var(--on-surface-variant);
+    font-weight: 600;
+}
+
+/* Glass Cards */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--outline);
+    border-radius: 16px;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.timer-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+}
+
+.timer-display {
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    color: #fff;
+    line-height: 1;
+    transition: all 0.5s ease;
+}
+
+.timer-display.active {
+    color: var(--primary);
+    text-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+}
+
+.timer-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--on-surface-variant);
+}
+
+/* Toggle */
+.toggle-container {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(0,0,0,0.2);
+    padding: 8px 16px;
+    border-radius: 9999px;
+    border: 1px solid var(--outline);
+}
+
+.status-label {
+    font-size: 12px;
+    font-weight: 800;
+    min-width: 30px;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #2e3637;
+    transition: .4s;
+    border-radius: 20px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #fff;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--primary);
+    box-shadow: 0 0 15px rgba(0, 245, 255, 0.3);
+}
+
+input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+/* List Card */
+.list-card {
+    padding: 16px;
+}
+
+.section-title {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: var(--on-surface-variant);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+}
+
+.blocked-sites {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.blocked-sites li {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--outline);
+    border-radius: 9999px;
+    color: var(--on-surface);
+}
+
+/* Footer */
+.footer {
+    display: flex;
+    justify-content: center;
+}
+
+.settings-btn {
+    background: transparent;
+    border: 1px solid var(--outline);
+    color: var(--on-surface-variant);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 8px 24px;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.05em;
+    position: relative;
+    z-index: 10;
+}
+
+.settings-btn:hover {
+    color: #fff;
+    border-color: var(--primary);
+    background: rgba(0, 245, 255, 0.05);
+    box-shadow: 0 0 10px rgba(0, 245, 255, 0.2);
+}
+
+.settings-btn:active {
+    transform: scale(0.95);
+}

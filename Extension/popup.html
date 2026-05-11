@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Frame-Out Focus</title>
+    <link rel="stylesheet" href="popup.css" />
+</head>
+<body class="popup-body">
+    <div class="extension-container">
+        <!-- Header with Official Logo -->
+        <header class="header">
+            <div class="logo-wrapper">
+                <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="1" y="1" width="30" height="30" rx="7" stroke="white" stroke-width="1.5" fill="none"/>
+                    <rect x="8" y="8" width="16" height="1.8" rx="0.9" fill="white"/>
+                    <rect x="8" y="8" width="1.8" height="16" rx="0.9" fill="white"/>
+                    <rect x="8" y="14.5" width="11" height="1.8" rx="0.9" fill="white"/>
+                    <circle cx="23.5" cy="23.5" r="2.5" fill="#00F5FF"/>
+                </svg>
+                <span class="brand-name">FRAME-OUT</span>
+            </div>
+            <div class="version">v1.0</div>
+        </header>
+
+        <!-- Focus Timer Card -->
+        <main class="main-content">
+            <div class="glass-card timer-card">
+                <div class="timer-display" id="timerDisplay">00:00</div>
+                <div class="timer-label">DEEP WORK SESSION</div>
+                
+                <div class="toggle-container">
+                    <span class="status-label" id="statusText">OFF</span>
+                    <label class="switch">
+                        <input type="checkbox" id="focusToggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Stats/Info List -->
+            <div class="glass-card list-card">
+                <h3 class="section-title">ACTIVE BLOCKERS</h3>
+                <ul class="blocked-sites" id="blockedList">
+                    <!-- Sites will be injected by popup.js -->
+                </ul>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <button class="settings-btn">SETTINGS</button>
+        </footer>
+    </div>
+    <script src="popup.js"></script>
+</body>
+</html>

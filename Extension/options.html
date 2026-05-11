@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frame-Out Settings</title>
+    <link rel="stylesheet" href="options.css">
+</head>
+<body>
+    <div class="settings-container">
+        <header class="header">
+            <div class="logo-wrapper">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="1" y="1" width="30" height="30" rx="7" stroke="white" stroke-width="1.5" fill="none"/>
+                    <rect x="8" y="8" width="16" height="1.8" rx="0.9" fill="white"/>
+                    <rect x="8" y="8" width="1.8" height="16" rx="0.9" fill="white"/>
+                    <rect x="8" y="14.5" width="11" height="1.8" rx="0.9" fill="white"/>
+                    <circle cx="23.5" cy="23.5" r="2.5" fill="#00F5FF"/>
+                </svg>
+                <h1 class="brand-name">FRAME-OUT CONFIG</h1>
+            </div>
+        </header>
+
+        <main class="content">
+            <section class="section">
+                <h2 class="section-title">CUSTOM BLOCKLIST</h2>
+                <p class="section-desc">Add domains you want to block during focus sessions (e.g., bbc.com, twitch.tv).</p>
+                
+                <div class="input-group">
+                    <input type="text" id="siteInput" placeholder="Enter domain..." class="site-input">
+                    <button id="addBtn" class="add-btn">ADD SITE</button>
+                </div>
+
+                <div class="glass-card list-container">
+                    <ul id="customList" class="custom-list">
+                        <!-- List items injected by options.js -->
+                    </ul>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">FOCUS PREFERENCES</h2>
+                
+                <div class="preference-item">
+                    <div class="pref-info">
+                        <span class="pref-label">Focus Duration (minutes)</span>
+                        <span class="pref-desc">Set how long each deep work session lasts.</span>
+                    </div>
+                    <input type="number" id="focusDuration" min="1" max="180" value="25" class="pref-input">
+                </div>
+
+                <div class="preference-item">
+                    <div class="pref-info">
+                        <span class="pref-label">Ad Blocker (Beta)</span>
+                        <span class="pref-desc">Block common ads and trackers during focus.</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="blockAds" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="preference-item">
+                    <div class="pref-info">
+                        <span class="pref-label">Block YouTube Shorts</span>
+                        <span class="pref-desc">Hide all short-form content on YouTube.</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="blockShorts" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="preference-item">
+                    <div class="pref-info">
+                        <span class="pref-label">Block Instagram Reels</span>
+                        <span class="pref-desc">Hide Reels and explore sections.</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="blockReels" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="options.js"></script>
+</body>
+</html>
