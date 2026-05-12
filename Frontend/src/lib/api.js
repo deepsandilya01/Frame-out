@@ -23,8 +23,12 @@ const isLocalhost = () => {
   return ['localhost', '127.0.0.1'].includes(window.location.hostname);
 };
 
-export const BACKEND_URL = isLocalhost()
+const configuredBackendUrl = normalizeUrl(import.meta.env.BACKEND_URI || import.meta.env.VITE_BACKEND_URI);
+const shouldUseLocalBackend =
+  import.meta.env.BACKEND_USE_LOCAL === 'true' || (isLocalhost() && !configuredBackendUrl);
+
+export const BACKEND_URL = shouldUseLocalBackend
   ? LOCAL_BACKEND_URL
-  : normalizeUrl(import.meta.env.BACKEND_URI || import.meta.env.VITE_BACKEND_URI) || LOCAL_BACKEND_URL;
+  : configuredBackendUrl || LOCAL_BACKEND_URL;
 
 export const API_BASE_URL = `${BACKEND_URL}/api`;
