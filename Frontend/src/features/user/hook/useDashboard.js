@@ -14,16 +14,21 @@ export function useDashboard() {
   const loadDashboard = useCallback(async () => {
     dispatch(setDashboardLoading(true));
     try {
-      const [statsRes, tasksRes, weekRes, focusStatsRes] = await Promise.all([
+      const [statsRes, tasksRes, weekRes, focusStatsRes, todayRes] = await Promise.all([
         userService.getUserStats(),
         userService.getTasks({ status: 'pending' }),
         userService.getFocusWeek(),
         userService.getFocusStats(),
+        userService.getFocusToday()
       ]);
 
       dispatch(setDashboardStats({
         userStats: statsRes.stats,
-        focusStats: focusStatsRes.stats,
+        focusStats: {
+          ...focusStatsRes.stats,
+          todayMinutes: todayRes.totalMinutes || 0,
+          completedSessions: statsRes.stats?.completedSessions || statsRes.stats?.totalSessionsCompleted || 0,
+        },
       }));
       dispatch(setRecentTasks(tasksRes.tasks?.slice(0, 5) || []));
       dispatch(setWeeklyFocus(weekRes.sessions || []));

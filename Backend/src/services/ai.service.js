@@ -34,12 +34,22 @@ async function askJSON(userPrompt) {
   // Strip ```json ... ``` or ``` ... ``` just in case
   raw = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
 
+  // FIX: AI sometimes returns unescaped newlines or tabs inside string literals.
+  // Replacing all raw newlines/tabs with spaces prevents "Bad control character" JSON errors.
+  raw = raw.replace(/[\n\r\t]+/g, ' ');
+
   try {
     return JSON.parse(raw);
-  } catch {
+  } catch (err) {
     // Last resort: extract first {...} block
     const match = raw.match(/\{[\s\S]*\}/);
-    if (match) return JSON.parse(match[0]);
+    if (match) {
+      try {
+        return JSON.parse(match[0]);
+      } catch {
+        throw new Error("Mistral returned unparsable JSON response: " + err.message);
+      }
+    }
     throw new Error("Mistral returned non-JSON response: " + raw.slice(0, 200));
   }
 }

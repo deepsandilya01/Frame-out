@@ -19,6 +19,7 @@ const NAV = [
 ];
 
 const BOTTOM_NAV = [
+  { to: '/profile',    icon: User,              label: 'Profile' },
   { to: '/leaderboard',icon: Trophy,            label: 'Leaderboard' },
   { to: '/settings',   icon: Settings,          label: 'Settings' },
 ];
@@ -123,15 +124,15 @@ export default function Sidebar() {
 
       {/* User Footer */}
       <div className="p-4 mt-auto">
-        <div className="glass rounded-xl p-3 space-y-2">
+        <NavLink to="/profile" onClick={() => setIsOpen(false)} className="block glass rounded-xl p-3 space-y-2 hover:border-accent/40 transition-all hover-lift group">
           {/* Avatar + name */}
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all group-hover:scale-110"
                  style={{ background: 'rgba(0,245,255,0.15)', border: '1px solid rgba(0,245,255,0.3)', color: 'var(--theme-accent)' }}>
               {(user?.fullname || 'U')[0].toUpperCase()}
             </div>
             <div className="min-w-0">
-              <p className="text-[#dce4e4] text-xs font-medium truncate">{user?.fullname || 'User'}</p>
+              <p className="text-[#dce4e4] text-xs font-medium truncate group-hover:text-white transition-colors">{user?.fullname || 'User'}</p>
               <p className="text-[#849495] text-[10px] truncate">{user?.email}</p>
             </div>
           </div>
@@ -144,7 +145,7 @@ export default function Sidebar() {
               <span className="text-accent font-semibold">Lv.{stats.level} · {stats.xp} XP</span>
             </div>
           )}
-        </div>
+        </NavLink>
       </div>
       </aside>
     </>

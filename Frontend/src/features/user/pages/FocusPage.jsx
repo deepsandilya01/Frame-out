@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { Play, Square, RotateCcw, Zap, Flame, Maximize2, Wind, Brain, Volume2, VolumeX, Target, Clock } from 'lucide-react';
+import { Play, Square, RotateCcw, Zap, Flame, Maximize2, Wind, Brain, Volume2, VolumeX, Target, Clock, Headphones } from 'lucide-react';
 import { useFocus } from '../hook/useFocus';
 import DeepWorkMode     from '../components/DeepWorkMode';
 import BreathingWidget  from '../components/BreathingWidget';
@@ -50,6 +50,7 @@ export default function FocusPage() {
   const [breathing,    setBreathing]     = useState(false);
   const [aiSuggestion, setAiSuggestion]  = useState(null);
   const [aiLoading,    setAiLoading]     = useState(false);
+  const [lofiPlaying,  setLofiPlaying]   = useState(false);
   const [celebration,  setCelebration]   = useState(null); // { xp, level, isLevelUp, badges }
 
   const { muted, toggleMute, playComplete, playBreakStart, playTick, playLevelUp } = useSoundAlerts();
@@ -92,6 +93,16 @@ export default function FocusPage() {
     return () => clearInterval(tickRef.current);
   }, [running, playComplete, playTick]);
 
+  // Dynamic Browser Tab Title
+  useEffect(() => {
+    if (running) {
+      document.title = `(${fmt(timeLeft)}) In The Zone ⚡`;
+    } else {
+      document.title = 'Frame-Out';
+    }
+    return () => { document.title = 'Frame-Out'; };
+  }, [timeLeft, running]);
+
   const handleStart = async () => {
     try {
       await startSession({
@@ -112,9 +123,17 @@ export default function FocusPage() {
     clearInterval(tickRef.current);
     setRunning(false);
     setDeepWork(false);
-    if (!activeSession) return;
+    if (!activeSession) {
+      setTimeLeft(0);
+      setTotalSec(0);
+      return;
+    }
     try {
       const res = await endSession({ sessionId: activeSession._id, distractions, notes, mood, completed: timeLeft === 0 });
+      setTimeLeft(0);
+      setTotalSec(0);
+      setDistractions(0);
+      setNotes('');
       if (res.gamification) {
         setGamification(res.gamification);
         const g = res.gamification;
@@ -206,12 +225,20 @@ export default function FocusPage() {
           >
             <Wind size={14} /> Breathing
           </button>
-          {/* Sound mute toggle */}
-          <button onClick={toggleMute}
-            className={`w-9 h-9 rounded-xl glass flex items-center justify-center transition-all ${muted ? 'text-[#849495]' : 'text-accent'}`}
-            title={muted ? 'Unmute sounds' : 'Mute sounds'}>
-            {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+          
+          {/* Lofi toggle */}
+          <button onClick={() => {
+              const aud = document.getElementById('lofi-audio');
+              if (!aud) return;
+              if (lofiPlaying) { aud.pause(); setLofiPlaying(false); }
+              else { aud.play(); setLofiPlaying(true); }
+            }}
+            className={`w-9 h-9 rounded-xl glass flex items-center justify-center transition-all ${!lofiPlaying ? 'text-[#849495] hover:text-white' : 'text-accent bg-accent/10 border border-accent/20'}`}
+            title={!lofiPlaying ? 'Play Lofi Concentration Music' : 'Pause Lofi'}>
+            <Headphones size={14} className={lofiPlaying ? 'animate-pulse' : ''} />
           </button>
+          <audio id="lofi-audio" loop src="https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3" preload="none"></audio>
+
         </div>
       </div>
 

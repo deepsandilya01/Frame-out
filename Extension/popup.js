@@ -24,54 +24,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  let timerInterval;
   const timerDisplay = document.getElementById('timerDisplay');
+  const timerLabel = document.querySelector('.timer-label');
 
-  function startTimer(duration) {
-    clearInterval(timerInterval);
-    let timer = duration, minutes, seconds;
-    timerInterval = setInterval(() => {
-      minutes = parseInt(timer / 60, 10);
-      seconds = parseInt(timer % 60, 10);
-
-      minutes = minutes < 10 ? "0" + minutes : minutes;
-      seconds = seconds < 10 ? "0" + seconds : seconds;
-
-      timerDisplay.textContent = minutes + ":" + seconds;
-
-      if (--timer < 0) {
-        clearInterval(timerInterval);
-        timerDisplay.textContent = "00:00";
-      }
-    }, 1000);
+  // Settings button
+  const settingsBtn = document.querySelector('.settings-btn');
+  if (settingsBtn) {
+      settingsBtn.onclick = () => {
+          if (chrome.runtime.openOptionsPage) {
+              chrome.runtime.openOptionsPage();
+          } else {
+              window.open(chrome.runtime.getURL('options.html'));
+          }
+      };
   }
-
-    // Settings button
-    const settingsBtn = document.querySelector('.settings-btn');
-    if (settingsBtn) {
-        settingsBtn.onclick = () => {
-            console.log("Settings button clicked");
-            if (chrome.runtime.openOptionsPage) {
-                chrome.runtime.openOptionsPage();
-            } else {
-                window.open(chrome.runtime.getURL('options.html'));
-            }
-        };
-    }
 
   function updateStatusText(isOn) {
     statusText.innerText = isOn ? 'ON' : 'OFF';
     statusText.style.color = isOn ? '#00F5FF' : '#849495';
+    
     if (isOn) {
       timerDisplay.classList.add('active');
-      chrome.storage.local.get(['focusDuration'], (result) => {
-        const duration = (result.focusDuration || 25) * 60;
-        startTimer(duration);
-      });
+      timerDisplay.style.fontSize = '32px';
+      timerDisplay.textContent = "STAY HARD";
+      if (timerLabel) timerLabel.textContent = "DISTRACTIONS BLOCKED";
     } else {
       timerDisplay.classList.remove('active');
-      clearInterval(timerInterval);
-      timerDisplay.textContent = "00:00";
+      timerDisplay.style.fontSize = '36px';
+      timerDisplay.textContent = "READY";
+      if (timerLabel) timerLabel.textContent = "ACTIVATE TO FOCUS";
     }
   }
 

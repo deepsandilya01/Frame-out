@@ -8,9 +8,14 @@
     "declarativeNetRequest",
     "declarativeNetRequestFeedback",
     "activeTab",
-    "scripting"
+    "scripting",
+    "tabs",
+    "alarms",
+    "cookies",
+    "idle"
   ],
   "host_permissions": [
+    "<all_urls>",
     "*://*.instagram.com/*",
     "*://*.facebook.com/*",
     "*://*.reddit.com/*",

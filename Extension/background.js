@@ -110,3 +110,154 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.set({ focusMode: false });
   disableFocusMode();
 });
+
+// -----------------------------------------------------------------------------
+// SMART SCREEN TIME & ACTIVITY TRACKING
+// -----------------------------------------------------------------------------
+
+const BACKEND_URL = "http://localhost:3000/api";
+let activeTabInfo = null; 
+let activityLog = {}; // { "github.com": { duration: 120, visits: 2, lastUpdated: 123 } }
+let lastSyncTime = Date.now();
+let lastActiveTime = Date.now();
+const IDLE_THRESHOLD = 60; // 60 seconds
+
+// Start periodic sync alarm
+chrome.alarms.create("syncActivity", { periodInMinutes: 1 });
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === "syncActivity") {
+    syncActivityToBackend();
+  }
+});
+
+// Track active tab changes
+chrome.tabs.onActivated.addListener(async (activeInfo) => {
+  updateCurrentTabDuration();
+  const tab = await chrome.tabs.get(activeInfo.tabId);
+  setActiveTab(tab);
+});
+
+// Track URL changes within the same tab
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.url && activeTabInfo && tabId === activeTabInfo.id) {
+    updateCurrentTabDuration();
+    setActiveTab(tab);
+  }
+});
+
+// Handle window focus changes
+chrome.windows.onFocusChanged.addListener(async (windowId) => {
+  if (windowId === chrome.windows.WINDOW_ID_NONE) {
+    updateCurrentTabDuration();
+    activeTabInfo = null; // Browser lost focus
+  } else {
+    const tabs = await chrome.tabs.query({ active: true, windowId: windowId });
+    if (tabs.length > 0) {
+      updateCurrentTabDuration();
+      setActiveTab(tabs[0]);
+    }
+  }
+});
+
+// Idle state detection
+chrome.idle.setDetectionInterval(IDLE_THRESHOLD);
+chrome.idle.onStateChanged.addListener((state) => {
+  if (state === "idle" || state === "locked") {
+    updateCurrentTabDuration();
+    activeTabInfo = null;
+  } else if (state === "active") {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs.length > 0) setActiveTab(tabs[0]);
+    });
+  }
+});
+
+function setActiveTab(tab) {
+  if (!tab || !tab.url || tab.url.startsWith("chrome://") || tab.url.startsWith("chrome-extension://")) {
+    activeTabInfo = null;
+    return;
+  }
+  
+  try {
+    const url = new URL(tab.url);
+    const domain = url.hostname.replace("www.", "");
+    
+    activeTabInfo = {
+      id: tab.id,
+      domain: domain,
+      startTime: Date.now()
+    };
+    
+    // Record visit
+    if (!activityLog[domain]) {
+      activityLog[domain] = { duration: 0, visits: 0 };
+    }
+    activityLog[domain].visits += 1;
+  } catch (e) {
+    activeTabInfo = null;
+  }
+}
+
+function updateCurrentTabDuration() {
+  if (activeTabInfo) {
+    const now = Date.now();
+    const durationSecs = Math.floor((now - activeTabInfo.startTime) / 1000);
+    
+    if (durationSecs > 0) {
+      if (!activityLog[activeTabInfo.domain]) {
+        activityLog[activeTabInfo.domain] = { duration: 0, visits: 0 };
+      }
+      activityLog[activeTabInfo.domain].duration += durationSecs;
+    }
+    activeTabInfo.startTime = now;
+    lastActiveTime = now;
+  }
+}
+
+async function syncActivityToBackend() {
+  updateCurrentTabDuration();
+  
+  const entries = Object.keys(activityLog);
+  if (entries.length === 0) return;
+  
+  // Prepare payload
+  const payload = entries.map(domain => ({
+    website: domain,
+    duration: activityLog[domain].duration,
+    visits: activityLog[domain].visits
+  })).filter(e => e.duration > 0 || e.visits > 0);
+  
+  if (payload.length === 0) return;
+  
+  try {
+    // Get token from cookies
+    const cookie = await new Promise(resolve => {
+      chrome.cookies.get({ url: BACKEND_URL, name: "token" }, (c) => resolve(c));
+    });
+    
+    let token = cookie ? cookie.value : null;
+    
+    if (!token) {
+      console.warn("No auth token found, cannot sync activity.");
+      return;
+    }
+
+    const res = await fetch(`${BACKEND_URL}/analytics/sync-extension`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ activities: payload })
+    });
+    
+    if (res.ok) {
+      // Clear log after successful sync
+      activityLog = {};
+      if (activeTabInfo) activeTabInfo.startTime = Date.now();
+    }
+  } catch (error) {
+    console.error("Failed to sync activity to backend:", error);
+  }
+}

@@ -20,10 +20,10 @@ export function useAnalytics() {
         userService.getAnalyticsMonth(),
         userService.getAnalyticsOverview(),
       ]);
-      dispatch(setAnalyticsToday(today.analytics));
-      dispatch(setAnalyticsWeek(week.analytics));
-      dispatch(setAnalyticsMonth(month.analytics));
-      dispatch(setAnalyticsOverview(overview.analytics));
+      dispatch(setAnalyticsToday(today.snapshot));
+      dispatch(setAnalyticsWeek(week));
+      dispatch(setAnalyticsMonth(month));
+      dispatch(setAnalyticsOverview(overview.overview));
     } catch (err) {
       dispatch(setAnalyticsError(err.message));
     }

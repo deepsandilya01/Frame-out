@@ -12,7 +12,7 @@ export function useHeatmap() {
     try {
       await userService.syncHeatmap();
       const res = await userService.getHeatmapYear();
-      dispatch(setHeatmapYear(res.heatmap || []));
+      dispatch(setHeatmapYear(res.grid || res.heatmap || []));
     } catch (err) {
       dispatch(setHeatmapError(err.message));
     }

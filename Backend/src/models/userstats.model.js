@@ -3,18 +3,17 @@ import mongoose from "mongoose";
 // ---------------------------------------------------------------------------
 // XP thresholds per level (level N requires this much total XP to reach)
 // ---------------------------------------------------------------------------
-export const LEVEL_THRESHOLDS = [
-  0,     // Level 1
-  100,   // Level 2
-  250,   // Level 3
-  500,   // Level 4
-  900,   // Level 5
-  1400,  // Level 6
-  2000,  // Level 7
-  2800,  // Level 8
-  3800,  // Level 9
-  5000,  // Level 10
-];
+export const LEVEL_THRESHOLDS = (function() {
+  const thresholds = [0, 100, 250, 500, 900, 1400, 2000, 2800, 3800, 5000];
+  let lastDiff = 1200;
+  let lastVal = 5000;
+  for (let i = 10; i < 100; i++) {
+    lastDiff += 200;
+    lastVal += lastDiff;
+    thresholds.push(lastVal);
+  }
+  return thresholds;
+})();
 
 // ---------------------------------------------------------------------------
 // XP reward values
@@ -42,6 +41,9 @@ export const BADGE_DEFINITIONS = {
   PERFECT_DAY:      { id: "PERFECT_DAY",      name: "Perfect Day",        desc: "4+ sessions and 3+ tasks in one day",     icon: "⭐" },
   LEVEL_5:          { id: "LEVEL_5",          name: "Rising Star",        desc: "Reached Level 5",                          icon: "🌟" },
   LEVEL_10:         { id: "LEVEL_10",         name: "Master Mind",        desc: "Reached Level 10",                         icon: "👑" },
+  LEVEL_25:         { id: "LEVEL_25",         name: "Grand Master",       desc: "Reached Level 25",                         icon: "💎" },
+  LEVEL_50:         { id: "LEVEL_50",         name: "Legend",             desc: "Reached Level 50",                         icon: "🐉" },
+  LEVEL_100:        { id: "LEVEL_100",        name: "God Mode",           desc: "Reached Level 100",                        icon: "🌌" },
   NO_DISTRACTION:   { id: "NO_DISTRACTION",   name: "Deep Focus",         desc: "Completed a session with 0 distractions", icon: "🧘" },
   EARLY_BIRD:       { id: "EARLY_BIRD",       name: "Early Bird",         desc: "Started a session before 7AM",            icon: "🌅" },
 };

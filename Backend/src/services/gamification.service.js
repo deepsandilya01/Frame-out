@@ -80,8 +80,11 @@ class GamificationService {
       if (stats.currentStreak >= 7)  if (stats.awardBadge("STREAK_7"))  newBadges.push("STREAK_7");
       if (stats.currentStreak >= 30) if (stats.awardBadge("STREAK_30")) newBadges.push("STREAK_30");
       if (stats.totalFocusMinutes >= 6000) if (stats.awardBadge("FOCUS_100")) newBadges.push("FOCUS_100");
-      if (stats.level >= 5)  if (stats.awardBadge("LEVEL_5"))  newBadges.push("LEVEL_5");
-      if (stats.level >= 10) if (stats.awardBadge("LEVEL_10")) newBadges.push("LEVEL_10");
+      if (stats.level >= 5)   if (stats.awardBadge("LEVEL_5"))   newBadges.push("LEVEL_5");
+      if (stats.level >= 10)  if (stats.awardBadge("LEVEL_10"))  newBadges.push("LEVEL_10");
+      if (stats.level >= 25)  if (stats.awardBadge("LEVEL_25"))  newBadges.push("LEVEL_25");
+      if (stats.level >= 50)  if (stats.awardBadge("LEVEL_50"))  newBadges.push("LEVEL_50");
+      if (stats.level >= 100) if (stats.awardBadge("LEVEL_100")) newBadges.push("LEVEL_100");
 
       await stats.save();
 

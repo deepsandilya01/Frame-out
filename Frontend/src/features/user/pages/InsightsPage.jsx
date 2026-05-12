@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { 
   BarChart, Bar, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, 
-  CartesianGrid 
+  CartesianGrid, PieChart, Pie, Cell 
 } from 'recharts';
 import { 
   Activity, Clock, Zap, Target, History as HistoryIcon, 
-  ChevronLeft, ChevronRight, CheckCircle, XCircle 
+  ChevronLeft, ChevronRight, CheckCircle, XCircle,
+  Monitor, Brain, ShieldAlert, BarChart2
 } from 'lucide-react';
 import { useAnalytics } from '../hook/useAnalytics';
 import { useHeatmap } from '../hook/useHeatmap';
@@ -23,6 +24,11 @@ const GITHUB_COLORS = [
 ];
 const ACTIVE_ONLY_COLOR = 'rgba(255,255,255,0.15)'; 
 
+const PIE_COLORS = {
+  Productive: '#00F5FF',
+  Distracting: '#ef4444',
+  Neutral: '#849495'
+};
 
 const MOOD_META = {
   sleepy:     { emoji: '😴', color: '#6366f1' },
@@ -44,7 +50,15 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-function StatBlock({ label, value, unit, sub, icon: Icon }) {
+function formatTime(secs) {
+  if (!secs) return '0m';
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+function StatBlock({ label, value, unit, sub, icon: Icon, accentColor }) {
   return (
     <div className="glass rounded-xl p-4 flex items-start justify-between group hover:border-white/10 transition-all">
       <div>
@@ -54,7 +68,7 @@ function StatBlock({ label, value, unit, sub, icon: Icon }) {
         </p>
         {sub && <p className="text-[10px] text-[#849495] mt-1">{sub}</p>}
       </div>
-      {Icon && <Icon size={16} className="text-[#849495] group-hover:text-accent transition-colors" />}
+      {Icon && <Icon size={16} className="transition-colors" style={{ color: accentColor || '#849495' }} />}
     </div>
   );
 }
@@ -68,10 +82,15 @@ export default function InsightsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  const [activityStats, setActivityStats] = useState(null);
+  const [actLoading, setActLoading] = useState(true);
+
+  // Load Data
   useEffect(() => {
     fetchAll();
     fetchYear();
     loadHistory(1);
+    loadActivityStats();
   }, []);
 
   const loadHistory = async (p = 1) => {
@@ -85,7 +104,17 @@ export default function InsightsPage() {
     finally { setHistLoading(false); }
   };
 
+  const loadActivityStats = async () => {
+    setActLoading(true);
+    try {
+      const res = await userService.getActivityStats();
+      setActivityStats(res.data);
+    } catch (e) { console.error("Failed to load activity stats", e); }
+    finally { setActLoading(false); }
+  };
+
   const { overview, week } = analytics;
+  const todayAct = activityStats?.today || {};
 
   // Heatmap grouping - Ensure exactly 371 days (53 weeks) for a consistent grid
   const fullYear = [...(year || [])];
@@ -100,28 +129,185 @@ export default function InsightsPage() {
   }
 
   // Week chart data
-  const weekData = week?.sessions
-    ? week.sessions.map((s, i) => ({
-        day: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i] || `D${i}`,
-        minutes: s.duration || 0,
-        distractions: s.distractions || 0,
-      }))
+  const weekData = week?.snapshots
+    ? week.snapshots.map((s, i) => {
+        const d = new Date(s.date);
+        return {
+          day: d.toLocaleDateString('en-US', { weekday: 'short' }),
+          minutes: s.totalFocusMinutes || 0,
+          distractions: s.distractionsCount || 0,
+        };
+      })
     : Array.from({ length: 7 }, (_, i) => ({ day: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i], minutes: 0, distractions: 0 }));
+
+  // Pie chart data
+  const pieData = [
+    { name: 'Productive', value: todayAct.productiveTime || 1, color: PIE_COLORS.Productive },
+    { name: 'Distracting', value: todayAct.distractingTime || 0, color: PIE_COLORS.Distracting },
+    { name: 'Neutral', value: todayAct.neutralTime || 0, color: PIE_COLORS.Neutral },
+  ].filter(d => d.value > 0);
+
+  // Top websites
+  const topSites = [...(todayAct.websites || [])].sort((a,b) => b.duration - a.duration).slice(0, 5);
 
   return (
     <div className="space-y-6 pb-12">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white tracking-tight">Productivity Pulse</h1>
-        <p className="text-[#849495] text-sm mt-0.5">Comprehensive insights and effort visualization</p>
+        <h1 className="text-2xl font-bold text-white tracking-tight">Intelligence Dashboard</h1>
+        <p className="text-[#849495] text-sm mt-0.5">Smart Screen Time & Activity Analytics</p>
       </div>
 
-      {/* 1. Heatmap Section */}
+      {/* 1. Core Metrics (Updated for Activity) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatBlock 
+          label="TOTAL SCREEN TIME" 
+          value={formatTime(todayAct.totalScreenTime).split(' ')[0]} 
+          unit={formatTime(todayAct.totalScreenTime).split(' ')[1] || ''} 
+          sub="Today's usage"
+          icon={Monitor}
+        />
+        <StatBlock 
+          label="PRODUCTIVE TIME" 
+          value={formatTime(todayAct.productiveTime).split(' ')[0]} 
+          unit={formatTime(todayAct.productiveTime).split(' ')[1] || ''} 
+          sub="Deep work & tools"
+          icon={Activity}
+          accentColor={PIE_COLORS.Productive}
+        />
+        <StatBlock 
+          label="DISTRACTING TIME" 
+          value={formatTime(todayAct.distractingTime).split(' ')[0]} 
+          unit={formatTime(todayAct.distractingTime).split(' ')[1] || ''} 
+          sub="Social media & leisure"
+          icon={ShieldAlert}
+          accentColor={PIE_COLORS.Distracting}
+        />
+        <StatBlock 
+          label="TOTAL FOCUS" 
+          value={Math.round((overview?.totalFocusMinutes || 0) / 60)} 
+          unit="hrs" 
+          sub="All time focus"
+          icon={Target}
+        />
+      </div>
+
+      {/* 2. AI Smart Insight Banner */}
+      {todayAct.distractingTime > 3600 && (
+        <div className="glass rounded-xl p-4 border border-red-500/30 bg-red-500/5 flex items-start gap-4">
+          <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+            <ShieldAlert size={16} className="text-red-400" />
+          </div>
+          <div>
+            <h3 className="text-white text-sm font-semibold mb-1">Distraction Alert 🚀</h3>
+            <p className="text-[#849495] text-xs">You've spent over an hour on distracting websites today. Consider starting a 25-minute recovery sprint to regain your focus.</p>
+          </div>
+        </div>
+      )}
+      
+      {todayAct.productiveTime > 7200 && (
+        <div className="glass rounded-xl p-4 border border-[var(--theme-accent)]/30 bg-[var(--theme-accent)]/5 flex items-start gap-4">
+          <div className="w-8 h-8 rounded-full bg-[var(--theme-accent)]/20 flex items-center justify-center flex-shrink-0">
+            <Brain size={16} className="text-[var(--theme-accent)]" />
+          </div>
+          <div>
+            <h3 className="text-white text-sm font-semibold mb-1">Peak Productivity 🧠</h3>
+            <p className="text-[#849495] text-xs">You're in the zone! With over 2 hours of productive activity, you are operating at peak efficiency today. Keep the momentum going!</p>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Screen Time Breakdown & Top Websites */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        
+        {/* Pie Chart */}
+        <div className="glass rounded-2xl p-5 border border-white/5 lg:col-span-1 flex flex-col items-center">
+          <div className="w-full flex items-center justify-between mb-2">
+             <p className="label-eyebrow">ACTIVITY BREAKDOWN</p>
+          </div>
+          <div className="h-[200px] w-full flex items-center justify-center relative">
+            {actLoading ? (
+               <div className="animate-pulse text-[#849495] text-xs">Analyzing...</div>
+            ) : (
+               <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} stroke="none" dataKey="value">
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
+               </ResponsiveContainer>
+            )}
+            {!actLoading && <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <span className="text-white font-bold text-xl">{formatTime(todayAct.totalScreenTime)}</span>
+            </div>}
+          </div>
+          <div className="flex gap-4 mt-2 w-full justify-center">
+             {pieData.map(d => (
+                <div key={d.name} className="flex items-center gap-1.5">
+                   <div className="w-2 h-2 rounded-full" style={{ background: d.color }} />
+                   <span className="text-[10px] text-[#849495]">{d.name}</span>
+                </div>
+             ))}
+          </div>
+        </div>
+
+        {/* Top Websites */}
+        <div className="glass rounded-2xl p-5 border border-white/5 lg:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+             <p className="label-eyebrow">TOP WEBSITES TODAY</p>
+             <BarChart2 size={16} className="text-[#849495]" />
+          </div>
+          {actLoading ? (
+             <div className="space-y-3">
+               {[1,2,3,4].map(i => <div key={i} className="h-8 glass rounded animate-pulse" />)}
+             </div>
+          ) : topSites.length === 0 ? (
+             <div className="h-full flex items-center justify-center pb-8 text-[#849495] text-xs">
+                No website activity tracked yet. Use the Chrome Extension to start tracking.
+             </div>
+          ) : (
+             <div className="space-y-3">
+               {topSites.map((site, i) => {
+                 const pct = (site.duration / todayAct.totalScreenTime) * 100;
+                 return (
+                   <div key={i} className="flex items-center gap-4">
+                      <div className="w-8 text-center text-[#849495] font-mono text-xs">{(i+1).toString().padStart(2, '0')}</div>
+                      <div className="flex-1">
+                         <div className="flex justify-between mb-1">
+                            <span className="text-white text-sm font-medium">{site.website}</span>
+                            <span className="text-[#849495] text-xs">{formatTime(site.duration)}</span>
+                         </div>
+                         <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                            <div className="h-full rounded-full" 
+                                 style={{ 
+                                   width: `${pct}%`, 
+                                   background: PIE_COLORS[site.category] || PIE_COLORS.Neutral 
+                                 }} 
+                            />
+                         </div>
+                      </div>
+                      <div className="w-20 text-right">
+                         <span className="pill text-[9px] px-2" style={{ color: PIE_COLORS[site.category], borderColor: `${PIE_COLORS[site.category]}40` }}>
+                            {site.category}
+                         </span>
+                      </div>
+                   </div>
+                 );
+               })}
+             </div>
+          )}
+        </div>
+      </div>
+
+      {/* 4. Heatmap Section */}
       <div className="glass rounded-2xl p-6 border border-white/5 overflow-hidden">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
-            <Activity size={16} className="text-emerald-500" />
-            <h2 className="text-white font-semibold text-sm">Consistency Map</h2>
+            <Activity size={16} className="text-[var(--theme-accent)]" />
+            <h2 className="text-white font-semibold text-sm">Productivity Heatmap</h2>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-[#849495]">Less</span>
@@ -138,10 +324,30 @@ export default function InsightsPage() {
           <div className="overflow-x-auto pb-4 scrollbar-hide -mx-2 px-2">
             <div className="inline-flex flex-col gap-2 min-w-max">
               {/* Month markers */}
-              <div className="flex gap-[2px] ml-8">
-                {MONTHS.map(m => (
-                  <span key={m} className="text-[9px] text-[#849495] w-[45px]">{m}</span>
-                ))}
+              <div className="flex gap-1.5 ml-8 mb-1">
+                {weeks.map((week, i) => {
+                  const firstDay = week.find(d => d && d.date);
+                  if (!firstDay) return <div key={i} className="w-3 h-3" />;
+                  const dateObj = new Date(firstDay.date);
+                  const monthStr = dateObj.toLocaleString('en-US', { month: 'short' });
+                  
+                  let showLabel = false;
+                  if (i === 0) {
+                    showLabel = true;
+                  } else {
+                    const prevWeekFirstDay = weeks[i - 1].find(d => d && d.date);
+                    if (prevWeekFirstDay) {
+                      const prevMonthStr = new Date(prevWeekFirstDay.date).toLocaleString('en-US', { month: 'short' });
+                      if (monthStr !== prevMonthStr) showLabel = true;
+                    }
+                  }
+
+                  return (
+                    <div key={i} className="w-3 relative">
+                      {showLabel && <span className="absolute text-[9px] text-[#849495] top-0 -left-1 z-10">{monthStr}</span>}
+                    </div>
+                  );
+                })}
               </div>
               
               <div className="flex gap-1.5">
@@ -180,39 +386,7 @@ export default function InsightsPage() {
         )}
       </div>
 
-      {/* 2. Core Metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatBlock 
-          label="TOTAL FOCUS" 
-          value={Math.round((overview?.totalFocusMinutes || 0) / 60)} 
-          unit="hrs" 
-          sub={`${overview?.totalFocusMinutes || 0}m total`}
-          icon={Clock}
-        />
-        <StatBlock 
-          label="SESSIONS" 
-          value={overview?.totalSessions || 0} 
-          unit="" 
-          sub="All time"
-          icon={Target}
-        />
-        <StatBlock 
-          label="AVG SESSION" 
-          value={Math.round(overview?.avgSessionMinutes || 0)} 
-          unit="min" 
-          sub="Per session"
-          icon={Zap}
-        />
-        <StatBlock 
-          label="EFFICIENCY" 
-          value={`${Math.round((overview?.productivityRate || 0) * 100)}%`} 
-          unit="" 
-          sub="Last 7 days"
-          icon={Activity}
-        />
-      </div>
-
-      {/* 3. Trends Section */}
+      {/* 5. Trends Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="glass rounded-2xl p-5 border border-white/5">
           <p className="label-eyebrow mb-6">WEEKLY FOCUS VOLUME</p>
@@ -247,60 +421,6 @@ export default function InsightsPage() {
         </div>
       </div>
 
-      {/* 4. Recent Sessions */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-white/50">
-            <HistoryIcon size={14} />
-            <h3 className="text-xs font-semibold uppercase tracking-widest">Recent Activity</h3>
-          </div>
-          {totalPages > 1 && (
-            <div className="flex items-center gap-2">
-              <button onClick={() => loadHistory(page - 1)} disabled={page <= 1} className="p-1 hover:text-white text-[#849495] disabled:opacity-20"><ChevronLeft size={16}/></button>
-              <span className="text-[10px] text-[#849495] font-mono">{page} / {totalPages}</span>
-              <button onClick={() => loadHistory(page + 1)} disabled={page >= totalPages} className="p-1 hover:text-white text-[#849495] disabled:opacity-20"><ChevronRight size={16}/></button>
-            </div>
-          )}
-        </div>
-
-        {histLoading ? (
-          <div className="space-y-2">
-            {[...Array(3)].map((_, i) => <div key={i} className="glass rounded-xl h-16 animate-pulse" />)}
-          </div>
-        ) : sessions.length === 0 ? (
-          <div className="glass rounded-2xl p-8 text-center text-[#849495] text-xs">No recent sessions found.</div>
-        ) : (
-          <div className="space-y-2">
-            {sessions.map((s, i) => {
-              const mood = MOOD_META[s.mood];
-              const date = new Date(s.startedAt || s.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-              return (
-                <div key={s._id || i} className="glass rounded-xl px-4 py-3 flex items-center gap-4 hover:bg-white/4 transition-all group">
-                  <div className="flex-shrink-0">
-                    {s.completed ? <CheckCircle size={18} className="text-emerald-400" /> : <XCircle size={18} className="text-white/20" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white font-medium text-sm truncate">{s.notes || 'Focus Session'}</p>
-                    <p className="text-[#849495] text-[10px] mt-0.5">{date} · <span className="capitalize">{s.timerType || 'Manual'}</span></p>
-                  </div>
-                  <div className="text-right flex items-center gap-4">
-                    <div className="hidden sm:block">
-                       <p className="text-white font-mono text-sm">{s.duration}m</p>
-                       <p className="text-[#849495] text-[9px]">Duration</p>
-                    </div>
-                    {mood && <span className="text-lg" title={s.mood}>{mood.emoji}</span>}
-                    {s.xpEarned > 0 && (
-                      <div className="bg-accent-dim px-2 py-1 rounded-lg border border-accent/20 text-accent text-[10px] font-bold flex items-center gap-1">
-                        <Zap size={10} /> +{s.xpEarned}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
     </div>
   );
 }

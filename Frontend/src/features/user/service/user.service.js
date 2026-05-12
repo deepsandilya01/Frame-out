@@ -37,6 +37,7 @@ export const userService = {
   getAnalyticsWeek:   () => api.get('/analytics/week').then(r => r.data),
   getAnalyticsMonth:  () => api.get('/analytics/month').then(r => r.data),
   getAnalyticsOverview:() => api.get('/analytics/overview').then(r => r.data),
+  getActivityStats:   () => api.get('/analytics/activity-stats').then(r => r.data),
 
   // ─── HEATMAP ──────────────────────────────────────────────────────────────
   syncHeatmap:    () => api.post('/heatmap/sync').then(r => r.data),

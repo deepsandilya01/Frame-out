@@ -7,6 +7,7 @@ import {
   getMonthAnalytics,
   getOverview,
 } from "../controllers/analytics.controller.js";
+import { syncExtensionActivity, getActivityStats } from "../controllers/activity.controller.js";
 
 const analyticsRouter = Router();
 
@@ -45,5 +46,19 @@ analyticsRouter.get("/month", authenticateUser, getMonthAnalytics);
  * @access  Private
  */
 analyticsRouter.get("/overview", authenticateUser, getOverview);
+
+/**
+ * @route   POST /api/analytics/sync-extension
+ * @desc    Sync raw website activity from chrome extension
+ * @access  Private
+ */
+analyticsRouter.post("/sync-extension", authenticateUser, syncExtensionActivity);
+
+/**
+ * @route   GET /api/analytics/activity-stats
+ * @desc    Get website tracking stats (today & week)
+ * @access  Private
+ */
+analyticsRouter.get("/activity-stats", authenticateUser, getActivityStats);
 
 export default analyticsRouter;

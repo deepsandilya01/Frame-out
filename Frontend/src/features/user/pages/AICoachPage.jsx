@@ -30,11 +30,27 @@ function Section({ icon: Icon, title, children, loading, onRefresh }) {
   );
 }
 
+function Typewriter({ text, speed = 20 }) {
+  const [displayed, setDisplayed] = useState('');
+  useEffect(() => {
+    let i = 0;
+    setDisplayed('');
+    if (!text) return;
+    const interval = setInterval(() => {
+      setDisplayed(text.slice(0, i));
+      i++;
+      if (i > text.length) clearInterval(interval);
+    }, speed);
+    return () => clearInterval(interval);
+  }, [text, speed]);
+  return <span>{displayed}</span>;
+}
+
 function Loader() {
   return (
     <div className="flex items-center gap-3 py-4">
       <div className="w-5 h-5 rounded-full border-2 border-accent/20 border-t-accent animate-spin flex-shrink-0" />
-      <span className="text-[#849495] text-sm">Mistral AI is thinking…</span>
+      <span className="text-[#849495] text-sm animate-pulse">Mistral AI is analyzing your data...</span>
     </div>
   );
 }
@@ -135,17 +151,17 @@ export default function AICoachPage() {
           ) : analysis ? (
             <div className="space-y-4">
               {analysis.headline && (
-                <p className="text-accent font-semibold text-base">{analysis.headline}</p>
+                <p className="text-accent font-semibold text-base"><Typewriter text={analysis.headline} speed={15} /></p>
               )}
               {analysis.score_interpretation && (
-                <p className="text-[#849495] text-sm leading-relaxed">{analysis.score_interpretation}</p>
+                <p className="text-[#849495] text-sm leading-relaxed"><Typewriter text={analysis.score_interpretation} speed={8} /></p>
               )}
               {analysis.strengths?.length > 0 && (
                 <div>
                   <p className="label-eyebrow mb-2">STRENGTHS</p>
                   {analysis.strengths.map((s, i) => (
                     <div key={i} className="flex items-start gap-2 text-sm text-[#dce4e4] mb-1.5">
-                      <span className="text-accent mt-0.5">▸</span>{s}
+                      <span className="text-accent mt-0.5">▸</span><Typewriter text={s} speed={10} />
                     </div>
                   ))}
                 </div>
@@ -155,7 +171,7 @@ export default function AICoachPage() {
                   <p className="label-eyebrow mb-2">AREAS TO IMPROVE</p>
                   {analysis.areas_to_improve.map((a, i) => (
                     <div key={i} className="flex items-start gap-2 text-sm text-[#849495] mb-1.5">
-                      <span className="text-amber-400 mt-0.5">▸</span>{a}
+                      <span className="text-amber-400 mt-0.5">▸</span><Typewriter text={a} speed={10} />
                     </div>
                   ))}
                 </div>
@@ -163,13 +179,13 @@ export default function AICoachPage() {
               {analysis.distraction_insight && (
                 <div className="glass rounded-xl p-3 border-l-2 border-amber-400/50">
                   <p className="text-amber-400 text-xs font-semibold mb-0.5">DISTRACTION INSIGHT</p>
-                  <p className="text-[#dce4e4] text-sm">{analysis.distraction_insight}</p>
+                  <p className="text-[#dce4e4] text-sm"><Typewriter text={analysis.distraction_insight} speed={12} /></p>
                 </div>
               )}
               {analysis.tomorrow_goal && (
                 <div className="glass-glow rounded-xl p-3">
                   <p className="label-eyebrow mb-1">TOMORROW'S GOAL</p>
-                  <p className="text-accent text-sm font-medium">{analysis.tomorrow_goal}</p>
+                  <p className="text-accent text-sm font-medium"><Typewriter text={analysis.tomorrow_goal} speed={15} /></p>
                 </div>
               )}
             </div>
@@ -188,7 +204,7 @@ export default function AICoachPage() {
                 <Clock size={20} className="text-accent flex-shrink-0" />
                 <div>
                   <p className="label-eyebrow mb-0.5">OPTIMAL FOCUS TIME</p>
-                  <p className="text-accent font-bold text-lg">{suggestions.best_time_to_focus}</p>
+                  <p className="text-accent font-bold text-lg"><Typewriter text={suggestions.best_time_to_focus} speed={25} /></p>
                 </div>
                 <div className="ml-auto text-right">
                   <p className="label-eyebrow mb-0.5">RECOMMENDED SESSION</p>
@@ -200,7 +216,7 @@ export default function AICoachPage() {
                   <p className="label-eyebrow mb-2">TIPS</p>
                   {suggestions.tips.map((t, i) => (
                     <div key={i} className="flex items-start gap-2 text-sm text-[#dce4e4] mb-2">
-                      <span className="text-accent mt-0.5">▸</span>{t}
+                      <span className="text-accent mt-0.5">▸</span><Typewriter text={t} speed={10} />
                     </div>
                   ))}
                 </div>
@@ -208,12 +224,12 @@ export default function AICoachPage() {
               {suggestions.distraction_strategy && (
                 <div>
                   <p className="label-eyebrow mb-1">DISTRACTION STRATEGY</p>
-                  <p className="text-[#dce4e4] text-sm leading-relaxed">{suggestions.distraction_strategy}</p>
+                  <p className="text-[#dce4e4] text-sm leading-relaxed"><Typewriter text={suggestions.distraction_strategy} speed={12} /></p>
                 </div>
               )}
               {suggestions.mood_note && (
                 <div className="glass rounded-xl p-3 border border-white/5">
-                  <p className="text-[#849495] text-xs italic">{suggestions.mood_note}</p>
+                  <p className="text-[#849495] text-xs italic"><Typewriter text={suggestions.mood_note} speed={15} /></p>
                 </div>
               )}
             </div>
@@ -228,8 +244,8 @@ export default function AICoachPage() {
             <p className="text-red-400 text-sm">{report._error}</p>
           ) : report ? (
             <div className="space-y-4">
-              {report.title && <p className="text-accent font-bold text-lg">{report.title}</p>}
-              {report.summary && <p className="text-[#849495] text-sm leading-relaxed">{report.summary}</p>}
+              {report.title && <p className="text-accent font-bold text-lg"><Typewriter text={report.title} speed={25} /></p>}
+              {report.summary && <p className="text-[#849495] text-sm leading-relaxed"><Typewriter text={report.summary} speed={8} /></p>}
               {report.trend && (
                 <div className={`pill text-sm px-3 py-1 ${
                   report.trend === 'improving' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-400/20' :
@@ -245,7 +261,7 @@ export default function AICoachPage() {
                   <p className="label-eyebrow mb-2">HIGHLIGHTS</p>
                   {report.highlights.map((h, i) => (
                     <div key={i} className="flex items-start gap-2 text-sm text-[#dce4e4] mb-1.5">
-                      <span className="text-amber-400">★</span>{h}
+                      <span className="text-amber-400">★</span><Typewriter text={h} speed={12} />
                     </div>
                   ))}
                 </div>
@@ -268,13 +284,13 @@ export default function AICoachPage() {
                     </div>
                   </div>
                   {report.next_week_plan.key_habit && (
-                    <p className="text-[#dce4e4] text-sm">🎯 {report.next_week_plan.key_habit}</p>
+                    <p className="text-[#dce4e4] text-sm">🎯 <Typewriter text={report.next_week_plan.key_habit} speed={15} /></p>
                   )}
                 </div>
               )}
               {report.motivational_close && (
                 <p className="text-white italic text-sm text-center py-2 border-t border-white/5">
-                  "{report.motivational_close}"
+                  "<Typewriter text={report.motivational_close} speed={10} />"
                 </p>
               )}
             </div>
@@ -326,7 +342,7 @@ export default function AICoachPage() {
                     <p className="label-eyebrow mb-2">DETECTED SIGNALS</p>
                     {burnout.signals.map((s, i) => (
                       <div key={i} className="flex items-start gap-2 text-sm text-amber-400 mb-1.5">
-                        <span>⚠</span>{s}
+                        <span>⚠</span><Typewriter text={s} speed={10} />
                       </div>
                     ))}
                   </div>
@@ -337,7 +353,7 @@ export default function AICoachPage() {
                     <p className="label-eyebrow mb-2">RECOMMENDATIONS</p>
                     {burnout.recommendations.map((r, i) => (
                       <div key={i} className="flex items-start gap-2 text-sm text-[#dce4e4] mb-1.5">
-                        <span className="text-accent">▸</span>{r}
+                        <span className="text-accent">▸</span><Typewriter text={r} speed={12} />
                       </div>
                     ))}
                   </div>
@@ -346,13 +362,13 @@ export default function AICoachPage() {
                 {burnout.recovery_plan && (
                   <div className="glass rounded-xl p-3 border-l-2 border-emerald-400/50">
                     <p className="text-emerald-400 text-xs font-semibold mb-0.5">TODAY'S RECOVERY PLAN</p>
-                    <p className="text-[#dce4e4] text-sm">{burnout.recovery_plan}</p>
+                    <p className="text-[#dce4e4] text-sm"><Typewriter text={burnout.recovery_plan} speed={10} /></p>
                   </div>
                 )}
 
                 {burnout.encouragement && (
                   <p className="text-white italic text-sm text-center py-2 border-t border-white/5">
-                    "{burnout.encouragement}"
+                    "<Typewriter text={burnout.encouragement} speed={15} />"
                   </p>
                 )}
               </div>
