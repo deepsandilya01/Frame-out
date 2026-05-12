@@ -83,7 +83,7 @@ const RegisterPage = () => {
         {[
           { key: 'fullname', label: 'Full Name', type: 'text', placeholder: 'John Doe' },
           { key: 'email', label: 'Email', type: 'email', placeholder: 'name@example.com' },
-          { key: 'contact', label: 'Phone (optional)', type: 'tel', placeholder: '+91 98765 43210' },
+          { key: 'contact', label: 'Phone', type: 'tel', placeholder: '+91 98765 43210' },
         ].map(({ key, label, type, placeholder }) => (
           <div key={key} className="auth-form-el space-y-2">
             <label className="label-eyebrow" style={{ fontSize: '10px' }}>{label}</label>
