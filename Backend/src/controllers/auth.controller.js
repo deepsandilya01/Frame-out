@@ -10,15 +10,29 @@ const generateToken = (id, expiresIn = "7d") => {
   return jwt.sign({ id }, config.JWT_SECRET, { expiresIn });
 };
 
-const sendTokenResponse = async (user, res, message) => {
+const getAuthCookieOptions = (req) => {
+  const host = req?.headers?.host || "";
+  const isLocalBackend = /^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(host);
+  const isHttpsRequest =
+    req?.secure || req?.headers?.["x-forwarded-proto"] === "https" || !isLocalBackend;
+
+  return {
+    httpOnly: true,
+    secure: isHttpsRequest,
+    sameSite: isHttpsRequest ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  };
+};
+
+const getClearCookieOptions = (req) => {
+  const { maxAge, ...options } = getAuthCookieOptions(req);
+  return options;
+};
+
+const sendTokenResponse = async (user, req, res, message) => {
   const token = generateToken(user._id);
 
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+  res.cookie("token", token, getAuthCookieOptions(req));
 
   res.status(200).json({
     message,
@@ -109,7 +123,7 @@ export const login = asyncHandler(async (req, res) => {
     return res.status(403).json({ message: "Please verify your email first", success: false });
   }
 
-  await sendTokenResponse(user, res, "Login successful");
+  await sendTokenResponse(user, req, res, "Login successful");
 });
 
 // @desc    Get current user
@@ -196,12 +210,7 @@ export const googleCallback = asyncHandler(async (req, res) => {
 
   const token = generateToken(user._id);
 
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+  res.cookie("token", token, getAuthCookieOptions(req));
 
   const redirectUrl =
     config.NODE_ENV === "development" ? config.LOCAL_FRONTEND_URL : config.FRONTEND_URL;
@@ -248,6 +257,6 @@ export const logoutUser = asyncHandler(async (req, res) => {
     } catch (e) {}
   }
 
-  res.clearCookie("token");
+  res.clearCookie("token", getClearCookieOptions(req));
   res.status(200).json({ message: "Logged out successfully", success: true });
 });

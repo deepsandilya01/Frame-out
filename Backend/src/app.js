@@ -7,7 +7,7 @@ import rateLimit from "express-rate-limit";
 import mongoSanitize from "express-mongo-sanitize";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import { config } from "./config/config.js";
+import { config, isAllowedFrontendOrigin } from "./config/config.js";
 
 // Routes
 import authRouter from "./routes/auth.routes.js";
@@ -41,7 +41,9 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: config.FRONTEND_ORIGINS,
+    origin: (origin, callback) => {
+      callback(null, isAllowedFrontendOrigin(origin));
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
   }),

@@ -58,6 +58,22 @@ const normalizeFrontendUrl = (url) => {
 
 const frontendUrl = normalizeFrontendUrl(process.env.FRONTEND_URL) || LOCAL_FRONTEND_URLS[0];
 
+export const isAllowedFrontendOrigin = (origin) => {
+  const normalizedOrigin = normalizeFrontendUrl(origin);
+  if (!normalizedOrigin) return true;
+
+  if (config.FRONTEND_ORIGINS.includes(normalizedOrigin)) {
+    return true;
+  }
+
+  try {
+    const { hostname } = new URL(normalizedOrigin);
+    return /^frame-out-[a-z0-9-]+\.vercel\.app$/i.test(hostname);
+  } catch {
+    return false;
+  }
+};
+
 export const config = {
   MONGO_URI: process.env.MONGO_URI,
   JWT_SECRET: process.env.JWT_SECRET,
@@ -77,7 +93,7 @@ export const config = {
 export const getFrontendUrl = (req) => {
   const requestOrigin = normalizeFrontendUrl(req?.get?.("origin") || req?.headers?.origin);
 
-  if (requestOrigin && config.FRONTEND_ORIGINS.includes(requestOrigin)) {
+  if (requestOrigin && isAllowedFrontendOrigin(requestOrigin)) {
     return requestOrigin;
   }
 

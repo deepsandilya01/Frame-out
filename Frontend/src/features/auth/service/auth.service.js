@@ -1,10 +1,11 @@
 import axios from 'axios';
-import { API_BASE_URL } from '../../../lib/api';
+import { API_BASE_URL, attachAuthToken, clearAuthToken, setAuthToken } from '../../../lib/api';
 
 const apiClient = axios.create({
   baseURL: `${API_BASE_URL}/auth`,
   withCredentials: true,
 });
+apiClient.interceptors.request.use(attachAuthToken);
 
 export const authService = {
   registerUser: async (data) => {
@@ -14,6 +15,9 @@ export const authService = {
 
   loginUser: async (data) => {
     const response = await apiClient.post('/login', data);
+    if (response.data?.token) {
+      setAuthToken(response.data.token);
+    }
     return response.data;
   },
 
@@ -43,8 +47,12 @@ export const authService = {
   },
 
   logoutUser: async () => {
-    const response = await apiClient.get('/logout');
-    return response.data;
+    try {
+      const response = await apiClient.get('/logout');
+      return response.data;
+    } finally {
+      clearAuthToken();
+    }
   },
   
   getGoogleAuthUrl: () => {

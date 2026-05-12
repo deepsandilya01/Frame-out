@@ -32,3 +32,31 @@ export const BACKEND_URL = shouldUseLocalBackend
   : configuredBackendUrl || LOCAL_BACKEND_URL;
 
 export const API_BASE_URL = `${BACKEND_URL}/api`;
+
+const AUTH_TOKEN_KEY = 'frame_out_token';
+
+export const getAuthToken = () => {
+  if (typeof window === 'undefined') return null;
+  return window.localStorage.getItem(AUTH_TOKEN_KEY);
+};
+
+export const setAuthToken = (token) => {
+  if (typeof window === 'undefined' || !token) return;
+  window.localStorage.setItem(AUTH_TOKEN_KEY, token);
+};
+
+export const clearAuthToken = () => {
+  if (typeof window === 'undefined') return;
+  window.localStorage.removeItem(AUTH_TOKEN_KEY);
+};
+
+export const attachAuthToken = (config) => {
+  const token = getAuthToken();
+
+  if (token) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+};

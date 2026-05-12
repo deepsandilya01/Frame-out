@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { authService } from '../service/auth.service';
 import { setCredentials, logout, setLoading } from '../state/auth.slice';
+import { clearAuthToken } from '../../../lib/api';
 
 // General hook for handling async operations with loading and error states
 const useAsync = (asyncFunction) => {
@@ -97,6 +98,7 @@ export const useCurrentUser = () => {
           dispatch(logout());
         }
       } catch (error) {
+        clearAuthToken();
         dispatch(logout());
       } finally {
         setIsFetching(false);
