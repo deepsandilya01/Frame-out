@@ -363,4 +363,92 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* Responsive Containers & Spacing */
+  .section-spacing {
+    @apply py-12 sm:py-20 lg:py-32;
+  }
+  
+  .container-tight {
+    @apply max-w-5xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .mobile-only {
+    @apply block sm:hidden;
+  }
+
+  .desktop-only {
+    @apply hidden sm:block;
+  }
+
+  /* Responsive Grid Helpers */
+  .grid-auto-fit {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 1.5rem;
+  }
+
+  /* ADAPTrix Brand Animation */
+  .animate-brand {
+    position: relative;
+    display: inline-block;
+    color: #fff;
+    font-weight: 700;
+    text-shadow: 0 0 8px rgba(0,245,255,0.3);
+  }
+
+  .animate-brand::before,
+  .animate-brand::after {
+    content: "ADAPTrix";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.8;
+  }
+
+  .animate-brand::before {
+    color: #00F5FF;
+    z-index: -1;
+    animation: glitch-brand 3s infinite;
+  }
+
+  .animate-brand::after {
+    color: #ff00ff;
+    z-index: -2;
+    animation: glitch-brand 3s infinite reverse;
+  }
+}
+
+@keyframes glitch-brand {
+  0% { transform: translate(0); }
+  20% { transform: translate(-1px, 1px); }
+  40% { transform: translate(-1px, -1px); }
+  60% { transform: translate(1px, 1px); }
+  80% { transform: translate(1px, -1px); }
+  100% { transform: translate(0); }
+}
+
+@keyframes scan {
+  from { transform: translateY(-20px); opacity: 0; }
+  50% { opacity: 1; }
+  to { transform: translateY(120px); opacity: 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out forwards;
+}
+
+html {
+  scroll-behavior: smooth;
 }

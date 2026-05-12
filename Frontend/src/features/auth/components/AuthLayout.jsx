@@ -44,10 +44,10 @@ const AuthLayout = ({ quote, quoteAuthor = '— Marcus Aurelius', children }) =>
         }} />
 
         {/* Logo */}
-        <div className="relative z-10 flex items-center gap-2.5">
-          <FrameOutLogo className="text-white/50" size={24} />
-          <span className="text-[13px] font-medium text-white/25 tracking-tight">Frame-Out</span>
-        </div>
+        <Link to="/" className="relative z-10 flex items-center gap-2.5 group hover:opacity-80 transition-opacity">
+          <FrameOutLogo className="text-white/50 group-hover:text-accent transition-colors" size={24} />
+          <span className="text-[13px] font-medium text-white/25 tracking-tight group-hover:text-white/40">Frame-Out</span>
+        </Link>
 
         {/* Quote */}
         <div className="relative z-10">
@@ -91,11 +91,20 @@ const AuthLayout = ({ quote, quoteAuthor = '— Marcus Aurelius', children }) =>
         className="flex-1 flex flex-col items-center justify-center relative overflow-y-auto"
         style={{ padding: 'clamp(80px, 10vh, 120px) clamp(16px, 5vw, 48px) clamp(32px, 5vh, 64px)' }}
       >
+        {/* Back to Home Button */}
+        <Link 
+          to="/" 
+          className="absolute top-6 right-6 flex items-center gap-2 text-[10px] uppercase tracking-widest text-white/20 hover:text-accent transition-colors"
+        >
+          <span>Back to website</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </Link>
+
         {/* Mobile logo — only visible < lg */}
-        <div className="lg:hidden absolute top-4 left-4 flex items-center gap-2">
-          <FrameOutLogo className="text-white/70" size={22} />
-          <span className="text-[13px] font-semibold text-white/50">Frame-Out</span>
-        </div>
+        <Link to="/" className="lg:hidden absolute top-4 left-4 flex items-center gap-2 group">
+          <FrameOutLogo className="text-white/70 group-hover:text-accent transition-colors" size={22} />
+          <span className="text-[13px] font-semibold text-white/50 group-hover:text-white/70">Frame-Out</span>
+        </Link>
 
         <div className="w-full space-y-6 sm:space-y-8" style={{ maxWidth: 'min(400px, 100%)' }}>
           {children}

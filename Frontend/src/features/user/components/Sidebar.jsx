@@ -64,9 +64,12 @@ export default function Sidebar() {
       {/* Mobile Toggle Button */}
       <button 
         onClick={() => setIsOpen(true)}
+        aria-label="Open navigation menu"
+        aria-expanded={isOpen}
+        aria-controls="sidebar-nav"
         className="md:hidden fixed top-4 left-4 z-50 p-2.5 glass-glow rounded-xl text-white active:scale-95 transition-all"
       >
-        <Menu size={22} />
+        <Menu size={22} aria-hidden="true" />
       </button>
 
       {/* Backdrop */}
@@ -85,9 +88,10 @@ export default function Sidebar() {
         {/* Close button (mobile only) */}
         <button 
           onClick={() => setIsOpen(false)}
+          aria-label="Close navigation menu"
           className="md:hidden absolute top-5 right-4 text-[#849495] hover:text-white"
         >
-          <X size={20} />
+          <X size={20} aria-hidden="true" />
         </button>
       {/* Logo */}
       <div className="px-5 pt-6 pb-4">
@@ -102,22 +106,23 @@ export default function Sidebar() {
       <div className="divider-laser mx-4" />
 
       {/* Main Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      <nav id="sidebar-nav" aria-label="Main navigation" className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {NAV.map(item => <NavItem key={item.to} {...item} />)}
       </nav>
 
       <div className="divider-laser mx-4" />
 
       {/* Bottom Nav */}
-      <nav className="px-3 py-2 space-y-0.5">
+      <nav aria-label="Secondary navigation" className="px-3 py-2 space-y-0.5">
         {BOTTOM_NAV.map(item => <NavItem key={item.to} {...item} />)}
 
         <button
           onClick={onLogout}
           disabled={loggingOut}
+          aria-label="Logout from Frame-Out"
           className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-[#849495] hover:text-red-400 hover:bg-red-500/5 transition-all duration-200"
         >
-          <LogOut size={16} />
+          <LogOut size={16} aria-hidden="true" />
           {loggingOut ? 'Logging out…' : 'Logout'}
         </button>
       </nav>

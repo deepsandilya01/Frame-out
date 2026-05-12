@@ -182,8 +182,8 @@ export default function TasksPage() {
                   </div>
                 </div>
 
-                {/* Actions Hover */}
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                {/* Actions Hover — Always visible on mobile for touch support */}
+                <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                   {task.status !== 'completed' && (
                     <button 
                       onClick={() => changeStatus(task._id, task.status === 'in-progress' ? 'pending' : 'in-progress')}

@@ -9,6 +9,8 @@ import RegisterPage     from '../features/auth/pages/RegisterPage';
 import ForgotPasswordPage from '../features/auth/pages/ForgotPasswordPage';
 import ResetPasswordPage  from '../features/auth/pages/ResetPasswordPage';
 import VerifyEmailPage    from '../features/auth/pages/VerifyEmailPage';
+import LegalPage          from '../features/auth/pages/LegalPage';
+import TeamPage           from '../features/auth/pages/TeamPage';
 
 // App Layout + User Pages
 import AppLayout        from '../features/user/components/AppLayout';
@@ -47,12 +49,14 @@ const PublicOnlyRoute = ({ children }) => {
 
 export const router = createBrowserRouter([
   // Public
-  { path: '/',                element: <LandingPage /> },
+  { path: '/',                element: <PublicOnlyRoute><LandingPage /></PublicOnlyRoute> },
   { path: '/login',           element: <PublicOnlyRoute><LoginPage /></PublicOnlyRoute> },
   { path: '/register',        element: <PublicOnlyRoute><RegisterPage /></PublicOnlyRoute> },
   { path: '/forgot-password', element: <PublicOnlyRoute><ForgotPasswordPage /></PublicOnlyRoute> },
   { path: '/reset-password',  element: <PublicOnlyRoute><ResetPasswordPage /></PublicOnlyRoute> },
   { path: '/verify-email',    element: <PublicOnlyRoute><VerifyEmailPage /></PublicOnlyRoute> },
+  { path: '/legal/:type',     element: <LegalPage /> },
+  { path: '/team',            element: <TeamPage /> },
 
   // Protected — all wrapped in AppLayout (sidebar)
   {
