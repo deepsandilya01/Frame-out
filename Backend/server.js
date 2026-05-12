@@ -4,6 +4,7 @@ dns.setDefaultResultOrder("ipv4first");
 
 import dotenv from "dotenv";
 import app from "./src/app.js";
+import { config } from "./src/config/config.js";
 import connectDB from "./src/config/db.js";
 
 dotenv.config();
@@ -16,6 +17,7 @@ const startServer = async () => {
 
     app.listen(PORT, () => {
       console.log(`Server listening on port ${PORT}`);
+      console.log(`Google OAuth callback URL: ${config.GOOGLE_CALLBACK_URL}`);
     });
   } catch (error) {
     console.error("Failed to start server:", error.message);

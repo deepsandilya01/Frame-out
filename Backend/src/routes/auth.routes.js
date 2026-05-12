@@ -69,7 +69,10 @@ authRouter.post("/reset-password", resetPassword);
  */
 authRouter.get(
   "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] }),
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    callbackURL: config.GOOGLE_CALLBACK_URL,
+  }),
 );
 
 /**
@@ -81,6 +84,7 @@ authRouter.get(
   "/google/callback",
   passport.authenticate("google", {
     session: false,
+    callbackURL: config.GOOGLE_CALLBACK_URL,
     failureRedirect:
       config.NODE_ENV === "development"
         ? `${config.LOCAL_FRONTEND_URL}/login`
