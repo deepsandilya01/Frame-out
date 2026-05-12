@@ -42,3 +42,11 @@ export const authenticateUser = async (req, res, next) => {
     return res.status(401).json({ message: "Unauthorized: Invalid token", success: false });
   }
 };
+
+export const authorizeAdmin = (req, res, next) => {
+  if (req.user && (req.user.role === "admin" || req.user.email === "admin@admin.com")) {
+    next();
+  } else {
+    return res.status(403).json({ message: "Forbidden: Admin access required", success: false });
+  }
+};

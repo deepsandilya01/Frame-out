@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import {
   LayoutDashboard, CheckSquare, Timer, BarChart3, Activity,
   Bot, Trophy, User, Settings, LogOut, Zap, Flame, Smile, BookOpen, Clock,
-  Menu, X
+  Menu, X, ShieldAlert
 } from 'lucide-react';
 import { useAppLogout } from '../hook/useUserProfile';
 import { FrameOutLogo } from '../../../components/FrameOutLogo';
@@ -108,6 +108,9 @@ export default function Sidebar() {
       {/* Main Nav */}
       <nav id="sidebar-nav" aria-label="Main navigation" className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {NAV.map(item => <NavItem key={item.to} {...item} />)}
+        {(user?.role === 'admin' || user?.email === 'admin@admin.com') && (
+          <NavItem to="/admin" icon={ShieldAlert} label="Admin Panel" />
+        )}
       </nav>
 
       <div className="divider-laser mx-4" />

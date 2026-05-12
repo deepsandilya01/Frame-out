@@ -200,14 +200,16 @@ export default function AICoachPage() {
             <p className="text-red-400 text-sm">{suggestions._error}</p>
           ) : suggestions ? (
             <div className="space-y-4">
-              <div className="glass rounded-xl p-4 flex items-center gap-4">
-                <Clock size={20} className="text-accent flex-shrink-0" />
+              <div className="glass rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+                <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <Clock size={20} className="text-accent" />
+                </div>
                 <div>
-                  <p className="label-eyebrow mb-0.5">OPTIMAL FOCUS TIME</p>
+                  <p className="label-eyebrow mb-0.5 opacity-60">OPTIMAL FOCUS TIME</p>
                   <p className="text-accent font-bold text-lg"><Typewriter text={suggestions.best_time_to_focus} speed={25} /></p>
                 </div>
-                <div className="ml-auto text-right">
-                  <p className="label-eyebrow mb-0.5">RECOMMENDED SESSION</p>
+                <div className="sm:ml-auto">
+                  <p className="label-eyebrow mb-0.5 opacity-60">RECOMMENDED SESSION</p>
                   <p className="text-white font-bold">{suggestions.optimal_session_length}m focus · {suggestions.optimal_break_length}m break</p>
                 </div>
               </div>
@@ -308,7 +310,7 @@ export default function AICoachPage() {
             return (
               <div className="space-y-4">
                 {/* Status card */}
-                <div className="rounded-2xl p-5 flex items-center gap-5"
+                <div className="rounded-2xl p-5 flex flex-col sm:flex-row items-center gap-5 sm:gap-6"
                      style={{ background: sc.bg, border: `1px solid ${sc.border}` }}>
                   {/* Risk gauge */}
                   <div className="relative w-20 h-20 flex-shrink-0">
@@ -328,12 +330,12 @@ export default function AICoachPage() {
                       </div>
                     </div>
                   </div>
-                  <div>
-                    <div className={`pill text-xs mb-2 ${sc.badge}`}>
+                  <div className="text-center sm:text-left">
+                    <div className={`pill text-[10px] mb-2 px-3 ${sc.badge}`}>
                       {burnout.status?.replace('_', ' ').toUpperCase()}
                     </div>
-                    <p className="text-white font-semibold">{burnout.headline}</p>
-                    <p className="text-[#849495] text-xs mt-1">Risk: {burnout.risk_level}</p>
+                    <p className="text-white font-bold text-base">{burnout.headline}</p>
+                    <p className="text-[#849495] text-xs mt-1 uppercase tracking-widest font-medium">Risk Level: <span style={{ color: RISK_COLORS[burnout.risk_level] }}>{burnout.risk_level}</span></p>
                   </div>
                 </div>
 

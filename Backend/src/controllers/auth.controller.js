@@ -45,6 +45,7 @@ const sendTokenResponse = async (user, req, res, message) => {
       verified: user.verified,
       level: user.level,
       rank: user.rank,
+      role: user.role,
     },
   });
 };
@@ -138,6 +139,7 @@ export const getMe = asyncHandler(async (req, res) => {
       verified: req.user.verified,
       level: req.user.level,
       rank: req.user.rank,
+      role: req.user.role,
     },
   });
 });

@@ -108,5 +108,3 @@ authRouter.get("/get-me", authenticateUser, getMe);
 authRouter.get("/logout", authenticateUser, logoutUser);
 
 export default authRouter;
-
-

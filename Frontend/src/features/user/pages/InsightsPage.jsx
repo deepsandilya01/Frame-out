@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { 
   BarChart, Bar, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, 
   CartesianGrid, PieChart, Pie, Cell 
@@ -128,17 +128,31 @@ export default function InsightsPage() {
     weeks.push(fullYear.slice(i, i + 7));
   }
 
-  // Week chart data
-  const weekData = week?.snapshots
-    ? week.snapshots.map((s, i) => {
-        const d = new Date(s.date);
-        return {
-          day: d.toLocaleDateString('en-US', { weekday: 'short' }),
-          minutes: s.totalFocusMinutes || 0,
-          distractions: s.distractionsCount || 0,
-        };
-      })
-    : Array.from({ length: 7 }, (_, i) => ({ day: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i], minutes: 0, distractions: 0 }));
+  // Merged Week Data for Trends
+  const weekData = useMemo(() => {
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      
+      // 1. Focus Snapshot Data
+      const snap = week?.snapshots?.find(s => s.date.startsWith(dateStr));
+      
+      // 2. Extension Activity Data
+      const act = activityStats?.week?.find(a => a.date === dateStr);
+
+      days.push({
+        date: dateStr,
+        day: d.toLocaleDateString('en-US', { weekday: 'short' }),
+        // Combined productive minutes (Timer + Extension)
+        minutes: (snap?.totalFocusMinutes || 0) + Math.round((act?.productiveTime || 0) / 60),
+        // Distractions (Manual session count + Extension distracting mins)
+        distractions: (snap?.distractionsCount || 0) + Math.round((act?.distractingTime || 0) / 60),
+      });
+    }
+    return days;
+  }, [week, activityStats]);
 
   // Pie chart data
   const pieData = [

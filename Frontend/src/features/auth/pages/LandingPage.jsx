@@ -224,8 +224,8 @@ const ThemeSwitcher = () => {
     document.documentElement.setAttribute('data-theme', key === 'cyan' ? '' : key);
   };
   return (
-    <div className="fixed z-50 glass rounded-2xl p-2 flex flex-col gap-1.5"
-      style={{ bottom: '16px', right: '12px' }}>
+    <div className="fixed z-50 glass rounded-full p-2.5 flex flex-col gap-2"
+      style={{ bottom: '24px', left: '24px' }}>
       {themes.map((t) => (
         <button key={t.key} title={t.label} onClick={() => switchTheme(t.key)}
           className="w-4 h-4 sm:w-5 sm:h-5 rounded-full transition-all duration-200 hover:scale-125"

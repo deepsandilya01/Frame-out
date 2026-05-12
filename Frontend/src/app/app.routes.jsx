@@ -23,6 +23,7 @@ import AICoachPage      from '../features/user/pages/AICoachPage';
 import LeaderboardPage  from '../features/user/pages/LeaderboardPage';
 import ProfilePage      from '../features/user/pages/ProfilePage';
 import SettingsPage     from '../features/user/pages/SettingsPage';
+import AdminDashboard   from '../features/admin/pages/AdminDashboard';
 
 // Route Guards
 const PrivateRoute = ({ children }) => {
@@ -37,13 +38,26 @@ const PrivateRoute = ({ children }) => {
 };
 
 const PublicOnlyRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useSelector(s => s.auth);
+  const { user, isAuthenticated, isLoading } = useSelector(s => s.auth);
   if (isLoading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: '#080808' }}>
       <div className="w-8 h-8 rounded-full border-2 border-accent/20 border-t-accent animate-spin" />
     </div>
   );
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+  if (isAuthenticated) {
+    return <Navigate to={user?.role === 'admin' ? '/admin' : '/dashboard'} replace />;
+  }
+  return children;
+};
+
+const AdminRoute = ({ children }) => {
+  const { user, isAuthenticated, isLoading } = useSelector(s => s.auth);
+  if (isLoading) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: '#080808' }}>
+      <div className="w-8 h-8 rounded-full border-2 border-accent/20 border-t-accent animate-spin" />
+    </div>
+  );
+  if (!isAuthenticated || (user?.role !== 'admin' && user?.email !== 'admin@admin.com')) return <Navigate to="/dashboard" replace />;
   return children;
 };
 
@@ -72,6 +86,7 @@ export const router = createBrowserRouter([
       { path: 'leaderboard', element: <LeaderboardPage /> },
       { path: 'profile',      element: <ProfilePage /> },
       { path: 'settings',     element: <SettingsPage /> },
+      { path: 'admin',        element: <AdminRoute><AdminDashboard /></AdminRoute> },
       // Redirects for backward compatibility (optional but good for stability)
       { path: 'analytics',   element: <Navigate to="/insights" replace /> },
       { path: 'heatmap',     element: <Navigate to="/insights" replace /> },

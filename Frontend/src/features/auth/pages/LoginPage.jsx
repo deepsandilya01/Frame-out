@@ -24,8 +24,12 @@ const LoginPage = () => {
 
   const onSubmit = async (data) => {
     try {
-      await login(data);
-      navigate('/');
+      const response = await login(data);
+      if (response.user?.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (_) {}
   };
 

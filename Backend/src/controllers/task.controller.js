@@ -85,10 +85,10 @@ export const updateTaskStatus = asyncHandler(async (req, res) => {
   let gamification = null;
   if (status === "completed" && oldStatus !== "completed") {
     task.completedAt = new Date();
-    // Award XP via Service
-    const result = await gamificationService.awardTaskRewards(req.user._id);
+    // Award XP via Service using task's specific reward
+    const result = await gamificationService.awardTaskRewards(req.user._id, task.xpReward);
     gamification = {
-      xpGained: 10,
+      xpGained: task.xpReward,
       level: result.stats.level,
       leveledUp: result.leveled,
       newBadges: result.newBadges,

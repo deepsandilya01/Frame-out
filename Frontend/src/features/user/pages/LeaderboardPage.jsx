@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Trophy, Crown, Zap, Flame, Medal, Award } from 'lucide-react';
+import { Trophy, Crown, Flame, Medal, Award } from 'lucide-react';
 import { useLeaderboard, useUserStats } from '../hook/useUserStats';
 import { useSelector } from 'react-redux';
 
@@ -19,12 +19,11 @@ function RankRowBg(rank) {
 
 export default function LeaderboardPage() {
   const { list, loading, fetchLeaderboard } = useLeaderboard();
-  const { stats }                           = useUserStats();
   const authUser                            = useSelector(s => s.auth.user);
 
   useEffect(() => {
     fetchLeaderboard();
-  }, []);
+  }, [fetchLeaderboard]);
 
   // Find current user's rank by matching fullname (backend only returns fullname)
   const myRank = list.findIndex(
@@ -51,28 +50,30 @@ export default function LeaderboardPage() {
 
       {/* Your rank highlight card */}
       {myEntry && (
-        <div className="glass-glow rounded-2xl p-5 flex flex-col sm:flex-row items-center gap-5">
-          <div className="text-5xl font-bold text-accent tabular-nums">#{myRank}</div>
-          <div className="hidden sm:block h-12 w-px bg-white/8" />
-          <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
-            <div>
-              <p className="label-eyebrow mb-1">YOUR XP</p>
-              <p className="text-xl font-bold text-accent">{myEntry.xp?.toLocaleString()}</p>
+        <div className="glass-glow rounded-3xl p-6 flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
+          <div className="text-5xl sm:text-6xl font-black text-accent tabular-nums tracking-tighter drop-shadow-[0_0_15px_rgba(0,245,255,0.2)]">
+            #{myRank}
+          </div>
+          <div className="hidden sm:block h-16 w-px bg-white/10" />
+          <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-y-6 gap-x-4 w-full">
+            <div className="text-center sm:text-left">
+              <p className="label-eyebrow mb-1 opacity-70">YOUR XP</p>
+              <p className="text-2xl font-bold text-accent">{myEntry.xp?.toLocaleString()}</p>
             </div>
-            <div>
-              <p className="label-eyebrow mb-1">LEVEL</p>
-              <p className="text-xl font-bold text-white">Lv.{myEntry.level}</p>
+            <div className="text-center sm:text-left">
+              <p className="label-eyebrow mb-1 opacity-70">LEVEL</p>
+              <p className="text-2xl font-bold text-white">Lv.{myEntry.level}</p>
             </div>
-            <div>
-              <p className="label-eyebrow mb-1">STREAK</p>
-              <p className="text-xl font-bold text-orange-400 flex items-center gap-1">
-                <Flame size={14} />{myEntry.streak}d
+            <div className="text-center sm:text-left">
+              <p className="label-eyebrow mb-1 opacity-70">STREAK</p>
+              <p className="text-2xl font-bold text-orange-400 flex items-center justify-center sm:justify-start gap-1.5">
+                <Flame size={18} fill="currentColor" />{myEntry.streak}d
               </p>
             </div>
-            <div>
-              <p className="label-eyebrow mb-1">BADGES</p>
-              <p className="text-xl font-bold text-amber-400 flex items-center gap-1">
-                <Award size={14} />{myEntry.badges}
+            <div className="text-center sm:text-left">
+              <p className="label-eyebrow mb-1 opacity-70">BADGES</p>
+              <p className="text-2xl font-bold text-amber-400 flex items-center justify-center sm:justify-start gap-1.5">
+                <Award size={18} fill="currentColor" />{myEntry.badges}
               </p>
             </div>
           </div>
@@ -81,67 +82,76 @@ export default function LeaderboardPage() {
 
       {/* Top 3 podium */}
       {list.length >= 3 && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           {/* 2nd place */}
-          <div className="glass rounded-2xl p-5 text-center flex flex-col items-center gap-2 mt-0 sm:mt-6 order-2 sm:order-1">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold"
-                 style={{ background: 'rgba(148,163,184,0.15)', border: '2px solid rgba(148,163,184,0.3)', color: '#cbd5e1' }}>
+          <div className="glass rounded-2xl p-6 text-center flex flex-col items-center gap-3 order-2 md:order-1 hover-lift">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold"
+                 style={{ background: 'rgba(148,163,184,0.1)', border: '2px solid rgba(148,163,184,0.2)', color: '#cbd5e1' }}>
               {(list[1]?.fullname || '?')[0].toUpperCase()}
             </div>
-            <Medal size={20} className="text-slate-300" />
-            <p className="text-white font-semibold text-sm truncate w-full text-center">{list[1]?.fullname}</p>
-            <span className="pill text-xs">Lv.{list[1]?.level}</span>
-            <p className="text-accent font-bold">{list[1]?.xp?.toLocaleString()} XP</p>
+            <div className="flex flex-col items-center">
+              <Medal size={24} className="text-slate-300 mb-1" />
+              <p className="text-white font-bold text-base truncate w-40">{list[1]?.fullname}</p>
+              <span className="pill text-[10px] mt-1">Lv.{list[1]?.level}</span>
+            </div>
+            <p className="text-accent font-black text-xl">{list[1]?.xp?.toLocaleString()} <span className="text-[10px] font-medium opacity-50 uppercase tracking-widest ml-1">XP</span></p>
           </div>
 
           {/* 1st place */}
-          <div className="glass-glow rounded-2xl p-5 text-center flex flex-col items-center gap-2 relative order-1 sm:order-2"
-               style={{ borderColor: 'rgba(251,191,36,0.3)' }}>
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-[10px] font-bold"
-                 style={{ background: 'rgba(251,191,36,0.2)', border: '1px solid rgba(251,191,36,0.4)', color: '#fbbf24' }}>
+          <div className="glass-glow rounded-3xl p-8 text-center flex flex-col items-center gap-4 relative order-1 md:order-2 scale-105 z-10 hover-lift"
+               style={{ borderColor: 'rgba(251,191,36,0.4)', background: 'linear-gradient(180deg, rgba(251,191,36,0.05) 0%, transparent 100%)' }}>
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-black tracking-widest"
+                 style={{ background: '#fbbf24', color: '#000', boxShadow: '0 0 20px rgba(251,191,36,0.4)' }}>
               CHAMPION
             </div>
-            <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold"
-                 style={{ background: 'rgba(251,191,36,0.15)', border: '2px solid rgba(251,191,36,0.5)', color: '#fbbf24',
-                          boxShadow: '0 0 16px rgba(251,191,36,0.2)' }}>
+            <div className="w-20 h-20 rounded-3xl flex items-center justify-center text-3xl font-black"
+                 style={{ background: 'rgba(251,191,36,0.1)', border: '2px solid #fbbf24', color: '#fbbf24',
+                          boxShadow: '0 0 30px rgba(251,191,36,0.2)' }}>
               {(list[0]?.fullname || '?')[0].toUpperCase()}
             </div>
-            <Crown size={22} className="text-amber-400" style={{ filter: 'drop-shadow(0 0 8px #f59e0b)' }} />
-            <p className="text-white font-bold truncate w-full text-center">{list[0]?.fullname}</p>
-            <span className="pill-accent text-xs">Lv.{list[0]?.level}</span>
-            <p className="text-accent font-bold text-lg">{list[0]?.xp?.toLocaleString()} XP</p>
+            <div className="flex flex-col items-center">
+              <Crown size={32} className="text-amber-400 mb-1" style={{ filter: 'drop-shadow(0 0 12px #f59e0b)' }} />
+              <p className="text-white font-black text-lg truncate w-48">{list[0]?.fullname}</p>
+              <span className="pill-accent text-[10px] mt-1 font-bold">LEVEL {list[0]?.level}</span>
+            </div>
+            <p className="text-accent font-black text-2xl">{list[0]?.xp?.toLocaleString()} <span className="text-xs font-medium opacity-50 uppercase tracking-widest ml-1">XP</span></p>
           </div>
 
           {/* 3rd place */}
-          <div className="glass rounded-2xl p-5 text-center flex flex-col items-center gap-2 mt-0 sm:mt-6 order-3">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold"
-                 style={{ background: 'rgba(180,120,60,0.15)', border: '2px solid rgba(180,120,60,0.3)', color: '#d97706' }}>
+          <div className="glass rounded-2xl p-6 text-center flex flex-col items-center gap-3 order-3 hover-lift">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold"
+                 style={{ background: 'rgba(180,120,60,0.1)', border: '2px solid rgba(180,120,60,0.2)', color: '#d97706' }}>
               {(list[2]?.fullname || '?')[0].toUpperCase()}
             </div>
-            <Medal size={20} className="text-amber-600" />
-            <p className="text-white font-semibold text-sm truncate w-full text-center">{list[2]?.fullname}</p>
-            <span className="pill text-xs">Lv.{list[2]?.level}</span>
-            <p className="text-accent font-bold">{list[2]?.xp?.toLocaleString()} XP</p>
+            <div className="flex flex-col items-center">
+              <Medal size={24} className="text-amber-600 mb-1" />
+              <p className="text-white font-bold text-base truncate w-40">{list[2]?.fullname}</p>
+              <span className="pill text-[10px] mt-1">Lv.{list[2]?.level}</span>
+            </div>
+            <p className="text-accent font-black text-xl">{list[2]?.xp?.toLocaleString()} <span className="text-[10px] font-medium opacity-50 uppercase tracking-widest ml-1">XP</span></p>
           </div>
         </div>
       )}
 
       {/* Full leaderboard table */}
-      <div className="glass rounded-2xl overflow-hidden overflow-x-auto scrollbar-hide">
-        <div className="min-w-[600px]">
+      <div className="glass rounded-3xl overflow-hidden shadow-2xl">
         {loading && list.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="w-6 h-6 border-2 border-accent/20 border-t-accent rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-[#849495] text-sm">Loading leaderboard…</p>
+          <div className="p-20 text-center">
+            <div className="w-8 h-8 border-2 border-accent/20 border-t-accent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-[#849495] text-sm font-medium animate-pulse tracking-wide uppercase">Updating global rankings…</p>
           </div>
         ) : list.length === 0 ? (
-          <div className="p-12 text-center">
-            <Trophy size={32} className="text-[#849495] mx-auto mb-3" />
-            <p className="text-[#849495] text-sm">No data yet. Complete focus sessions to appear here!</p>
+          <div className="p-20 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/10">
+              <Trophy size={32} className="text-[#849495] opacity-50" />
+            </div>
+            <p className="text-white font-bold text-lg">No rankings yet</p>
+            <p className="text-[#849495] text-sm mt-1">Complete focus sessions to claim your spot!</p>
           </div>
         ) : (
-          <>
-            {/* Header row */}
+          <div className="overflow-x-auto scrollbar-hide">
+            <div className="min-w-[700px]">
+              {/* Header row */}
             <div className="flex items-center gap-4 px-5 py-3 border-b border-white/8"
                  style={{ background: 'rgba(255,255,255,0.02)' }}>
               <span className="label-eyebrow w-10 text-center">RANK</span>
@@ -218,9 +228,9 @@ export default function LeaderboardPage() {
                 </div>
               );
             })}
-          </>
+            </div>
+          </div>
         )}
-        </div>
       </div>
     </div>
   );

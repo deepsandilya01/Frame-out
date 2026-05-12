@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { Play, Square, RotateCcw, Zap, Flame, Maximize2, Wind, Brain, Volume2, VolumeX, Target, Clock, Headphones } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { Play, Square, RotateCcw, Zap, Flame, Maximize2, Wind, Brain, Target, Clock, Headphones, X } from 'lucide-react';
 import { useFocus } from '../hook/useFocus';
 import DeepWorkMode     from '../components/DeepWorkMode';
 import BreathingWidget  from '../components/BreathingWidget';
@@ -59,7 +59,7 @@ export default function FocusPage() {
   const focusDuration = mode === 'pomodoro' ? 25 : customMin;
   const breakDuration = mode === 'pomodoro' ? 5  : breakMin;
 
-  useEffect(() => { fetchStats(); }, []);
+  useEffect(() => { fetchStats(); }, [fetchStats]);
 
   const fetchAISuggestion = async () => {
     setAiLoading(true);
@@ -260,91 +260,117 @@ export default function FocusPage() {
           )}
 
           {/* Circular Timer */}
-          <div className="relative flex items-center justify-center mb-6 w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64">
-            <CircularTimer seconds={timeLeft || (focusDuration * 60)} totalSeconds={totalSec || (focusDuration * 60)} size={260} />
+          <div className="relative flex items-center justify-center mb-8 w-64 h-64 sm:w-72 sm:h-72 lg:w-80 lg:h-80">
+            <CircularTimer seconds={timeLeft || (focusDuration * 60)} totalSeconds={totalSec || (focusDuration * 60)} size={320} />
             <div className="absolute text-center">
-              <div className="text-4xl sm:text-5xl font-bold text-white tracking-tighter tabular-nums">
+              <div className="text-5xl sm:text-6xl font-black text-white tracking-tighter tabular-nums drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
                 {fmt(timeLeft || focusDuration * 60)}
               </div>
-              <div className="text-[#849495] text-[10px] sm:text-xs mt-1 uppercase tracking-widest">{phase} phase</div>
+              <div className="text-accent text-[10px] sm:text-xs mt-2 uppercase tracking-[0.2em] font-bold opacity-80">{phase} phase</div>
             </div>
           </div>
 
           {/* Custom Duration */}
           {mode === 'custom' && !running && !activeSession && (
-            <div className="flex gap-4 mb-6">
+            <div className="flex gap-6 mb-8 glass px-6 py-4 rounded-2xl border-white/5">
               <div className="text-center">
-                <label className="label-eyebrow block mb-1">Focus (min)</label>
-                <input type="number" min={5} max={120} value={customMin}
-                       onChange={e => setCustomMin(Number(e.target.value))}
-                       className="w-16 text-center input-minimal text-lg font-bold" />
+                <label className="label-eyebrow block mb-2 opacity-60">Focus</label>
+                <div className="flex items-center gap-2">
+                  <input type="number" min={5} max={120} value={customMin}
+                         onChange={e => setCustomMin(Number(e.target.value))}
+                         className="w-14 text-center bg-transparent border-b border-accent/30 focus:border-accent text-xl font-bold text-white outline-none transition-colors" />
+                  <span className="text-[10px] text-[#849495] font-bold uppercase">min</span>
+                </div>
               </div>
+              <div className="w-px h-10 bg-white/10 self-center" />
               <div className="text-center">
-                <label className="label-eyebrow block mb-1">Break (min)</label>
-                <input type="number" min={1} max={30} value={breakMin}
-                       onChange={e => setBreakMin(Number(e.target.value))}
-                       className="w-16 text-center input-minimal text-lg font-bold" />
+                <label className="label-eyebrow block mb-2 opacity-60">Break</label>
+                <div className="flex items-center gap-2">
+                  <input type="number" min={1} max={30} value={breakMin}
+                         onChange={e => setBreakMin(Number(e.target.value))}
+                         className="w-14 text-center bg-transparent border-b border-white/20 focus:border-accent text-xl font-bold text-white outline-none transition-colors" />
+                  <span className="text-[10px] text-[#849495] font-bold uppercase">min</span>
+                </div>
               </div>
             </div>
           )}
 
           {/* AI Suggestion Card */}
           {aiSuggestion && !running && !activeSession && (
-            <div className="w-full mb-4 glass rounded-xl p-4 border border-purple-400/20 bg-purple-500/5">
-              <div className="flex items-center justify-between mb-2">
+            <div className="w-full mb-8 glass-glow rounded-2xl p-5 border-purple-500/40 bg-purple-500/5 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-2 opacity-20 group-hover:opacity-40 transition-opacity">
+                <Brain size={40} className="text-purple-400" />
+              </div>
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Brain size={12} className="text-purple-400" />
-                  <span className="text-purple-400 text-xs font-semibold uppercase tracking-wider">AI Suggestion Applied</span>
+                  <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+                  <span className="text-purple-400 text-[10px] font-black uppercase tracking-widest">AI Adaptive Zone</span>
                 </div>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full border ${
+                <span className={`text-[9px] px-2.5 py-0.5 rounded-full border font-bold uppercase tracking-wider ${
                   aiSuggestion.confidence === 'high'   ? 'bg-emerald-500/10 text-emerald-400 border-emerald-400/20' :
                   aiSuggestion.confidence === 'medium' ? 'bg-amber-500/10 text-amber-400 border-amber-400/20' :
                   'bg-white/5 text-[#849495] border-white/10'
-                }`}>{aiSuggestion.confidence} confidence</span>
+                }`}>{aiSuggestion.confidence} Match</span>
               </div>
-              <p className="text-white text-sm mb-1">
-                <span className="text-purple-400 font-bold">{aiSuggestion.suggested_minutes}min</span> focus ·{' '}
-                <span className="text-purple-400 font-bold">{aiSuggestion.suggested_break}min</span> break
-              </p>
-              <p className="text-[#849495] text-xs leading-relaxed">{aiSuggestion.reasoning}</p>
-              {aiSuggestion.tip && <p className="text-purple-300 text-xs mt-2 italic">💡 {aiSuggestion.tip}</p>}
-              <button onClick={() => setAiSuggestion(null)} className="text-[#849495] text-[10px] mt-2 hover:text-white">dismiss</button>
+              <h3 className="text-white text-lg font-bold mb-1">
+                {aiSuggestion.suggested_minutes}m <span className="text-purple-300/60 font-medium text-sm">Focus</span> ·{' '}
+                {aiSuggestion.suggested_break}m <span className="text-purple-300/60 font-medium text-sm">Break</span>
+              </h3>
+              <p className="text-[#849495] text-xs leading-relaxed max-w-[90%]">{aiSuggestion.reasoning}</p>
+              {aiSuggestion.tip && (
+                <div className="mt-3 flex items-start gap-2 text-purple-300 text-xs bg-purple-400/10 p-2 rounded-lg border border-purple-400/10">
+                   <Zap size={12} className="mt-0.5 flex-shrink-0" fill="currentColor" />
+                   <p className="italic">{aiSuggestion.tip}</p>
+                </div>
+              )}
+              <button onClick={() => setAiSuggestion(null)} className="absolute top-3 right-3 text-[#849495] hover:text-white transition-colors">
+                <X size={14} />
+              </button>
             </div>
           )}
 
           {/* Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
             {!activeSession ? (
-              <button onClick={handleStart} disabled={loading} className="btn-primary px-10 py-3 text-base">
-                <Play size={16} fill="currentColor" /> Start Focus
+              <button onClick={handleStart} disabled={loading} className="btn-primary w-full sm:w-auto px-12 py-4 text-base font-bold shadow-[0_0_30px_rgba(0,245,255,0.15)]">
+                <Play size={18} fill="currentColor" /> Start Focus
               </button>
             ) : (
-              <>
+              <div className="flex flex-wrap items-center justify-center gap-3 w-full">
                 {/* Deep Work Mode button — only when session is active */}
                 <button
                   onClick={() => setDeepWork(true)}
-                  className="flex items-center gap-2 glass-glow px-5 py-3 rounded-xl text-accent text-sm font-medium border border-accent/20 hover:bg-accent-dim transition-all"
-                  style={{ boxShadow: '0 0 12px rgba(0,245,255,0.08)' }}
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 glass-glow px-6 py-4 rounded-2xl text-accent text-sm font-bold border-accent/30 hover:bg-accent-dim transition-all active:scale-95"
                 >
-                  <Maximize2 size={14} /> Deep Work
+                  <Maximize2 size={16} /> DEEP WORK
                 </button>
-                <button onClick={handleEnd} disabled={loading} className="btn-primary px-8 py-3">
-                  <Square size={14} fill="currentColor" /> End Session
+                <button onClick={handleEnd} disabled={loading} className="flex-1 sm:flex-none btn-primary px-8 py-4 font-bold border-red-500/40 text-red-400 hover:bg-red-500/5 shadow-none">
+                  <Square size={16} fill="currentColor" /> END
                 </button>
-                <button onClick={reset} className="btn-ghost px-4 py-3">
-                  <RotateCcw size={14} />
+                <button onClick={reset} className="w-12 h-14 rounded-2xl glass flex items-center justify-center text-[#849495] hover:text-white transition-all active:scale-90">
+                  <RotateCcw size={18} />
                 </button>
-              </>
+              </div>
             )}
           </div>
 
           {/* Gamification Result */}
           {gamification && (
-            <div className="mt-6 glass-glow rounded-2xl p-4 text-center w-full">
-              <p className="text-accent font-bold text-lg">+{gamification.xpEarned} XP</p>
-              <p className="text-[#849495] text-sm">Level {gamification.level} · Streak {gamification.streak} days</p>
+            <div className="mt-8 glass-glow rounded-3xl p-6 text-center w-full max-w-sm animate-fade-in border-accent/20">
+              <div className="flex items-center justify-center gap-2 text-accent text-3xl font-black mb-1">
+                <Zap size={24} fill="currentColor" />
+                <span>+{gamification.xpEarned} XP</span>
+              </div>
+              <p className="text-white font-bold">Level {gamification.level} Reached</p>
+              <p className="text-[#849495] text-xs uppercase tracking-widest mt-1">{gamification.streak} Day Streak!</p>
               {gamification.newBadges?.length > 0 && (
-                <p className="text-amber-400 text-sm mt-1">🏅 New badge: {gamification.newBadges.join(', ')}</p>
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                  {gamification.newBadges.map(b => (
+                    <span key={b} className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                      🏅 {b}
+                    </span>
+                  ))}
+                </div>
               )}
             </div>
           )}

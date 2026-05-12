@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Trash2, CheckCircle2, Circle, Clock, Edit2, X, Check, Zap, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2, Circle, Clock, Edit2, X, Zap, AlertTriangle } from 'lucide-react';
 import { useTasks } from '../hook/useTasks';
 
 const PRIORITIES = ['low', 'medium', 'high'];
@@ -67,7 +67,7 @@ export default function TasksPage() {
   const [modal, setModal]   = useState(null); // null | 'new' | task object for edit
   const [filter, setFilter] = useState('all');
 
-  useEffect(() => { fetchTasks(); }, []);
+  useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
   const filtered = filter === 'all' ? tasks : tasks.filter(t => t.status === filter);
 
@@ -171,11 +171,11 @@ export default function TasksPage() {
                     {/* Gamification Stats */}
                     {task.status === 'completed' ? (
                        <span className="text-[10px] text-green-400 flex items-center gap-1 font-medium bg-green-400/10 px-2 py-0.5 rounded-full">
-                         <Zap size={9} fill="currentColor"/> +15 XP
+                         <Zap size={9} fill="currentColor"/> +{task.xpReward} XP
                        </span>
                     ) : (
                        <span className="text-[10px] text-orange-400/80 flex items-center gap-1">
-                         <Zap size={9}/> Reward: 15 XP <span className="mx-0.5 opacity-40">|</span> <span className="text-red-400/80">Miss: -5 XP</span>
+                         <Zap size={9}/> Reward: {task.xpReward} XP <span className="mx-0.5 opacity-40">|</span> <span className="text-red-400/80">Miss: -{task.penalty || 5} XP</span>
                        </span>
                     )}
 

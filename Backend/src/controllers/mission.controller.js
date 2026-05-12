@@ -87,14 +87,12 @@ export const completeMission = async (req, res) => {
     mission.completedAt= new Date();
     await doc.save();
 
-    // Award XP via UserStats
-    await UserStatsModel.findOneAndUpdate(
-      { user: userId },
-      {
-        $inc: { xp: mission.xpReward },
-        $push: { xpLog: { amount: mission.xpReward, reason: `Mission: ${mission.title}`, date: new Date() } },
-      }
-    );
+    // Award XP via UserStats with Level-up handling
+    let stats = await UserStatsModel.findOne({ user: userId });
+    if (!stats) stats = await UserStatsModel.create({ user: userId });
+    
+    stats.addXP(mission.xpReward, `Mission: ${mission.title}`);
+    await stats.save();
 
     return res.status(200).json({ success: true, message: "Mission completed!", missions: doc.missions, xpEarned: mission.xpReward });
   } catch (error) {

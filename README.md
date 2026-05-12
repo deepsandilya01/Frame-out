@@ -8,7 +8,7 @@ The project currently has three major applications:
 - `Backend`: Express/MongoDB API.
 - `Extension`: Chrome Manifest V3 focus extension.
 
-An admin panel is planned as the next major product layer. See [Admin Panel Roadmap](#admin-panel-roadmap).
+An admin panel is fully integrated for platform management, featuring real-time stats, user management, and system-wide audit logging.
 
 ## Product Vision
 
@@ -26,6 +26,7 @@ The app supports:
 - Journal and daily reflection.
 - Daily missions, XP, badges, levels, ranks, and leaderboard.
 - Chrome extension based website blocking and activity tracking.
+- **Admin Dashboard**: Comprehensive platform management for authorized personnel.
 
 ## Current Architecture
 
@@ -263,11 +264,12 @@ The extension currently provides:
 - Active tab tracking.
 - Screen-time aggregation.
 - Periodic activity sync to backend.
+- **Admin Management**: Direct task assignment and system audit integration.
 
 Current limitation:
 
 ```js
-const BACKEND_URL = "http://localhost:3000/api";
+const BACKEND_URL = "https://hackathon-1-2wnx.onrender.com/api";
 ```
 
 This is hardcoded in `Extension/background.js`. It should be made configurable before production extension release.
@@ -455,154 +457,14 @@ admin
 
 This makes the future admin panel easier to add.
 
-## Admin Panel Roadmap
+### Admin Dashboard Features (Completed)
 
-The admin panel is not built yet, but the current backend already has a `role` field in the user model. That should be used as the foundation.
-
-### Goal
-
-Build a protected admin dashboard for platform owners to monitor users, activity, health, usage, abuse, and product metrics.
-
-### Suggested Admin Routes
-
-Frontend:
-
-```txt
-/admin
-/admin/dashboard
-/admin/users
-/admin/users/:id
-/admin/analytics
-/admin/missions
-/admin/content
-/admin/system
-/admin/audit-log
-```
-
-Backend:
-
-```txt
-GET    /api/admin/overview
-GET    /api/admin/users
-GET    /api/admin/users/:id
-PATCH  /api/admin/users/:id/role
-PATCH  /api/admin/users/:id/status
-GET    /api/admin/analytics
-GET    /api/admin/activity
-GET    /api/admin/focus-sessions
-GET    /api/admin/tasks
-GET    /api/admin/missions
-GET    /api/admin/audit-log
-```
-
-### Required Admin Middleware
-
-Add middleware like:
-
-```js
-export const requireAdmin = (req, res, next) => {
-  if (req.user?.role !== "admin") {
-    return res.status(403).json({
-      success: false,
-      message: "Admin access required",
-    });
-  }
-
-  next();
-};
-```
-
-Admin routes should use:
-
-```js
-authenticateUser
-requireAdmin
-```
-
-### Admin Dashboard Metrics
-
-Admin overview should show:
-
-- Total users.
-- New users today.
-- Verified users.
-- Google-auth users.
-- Active users today.
-- Total focus minutes.
-- Sessions completed today.
-- Tasks completed today.
-- Top users by XP.
-- AI requests count.
-- Extension activity sync count.
-- Email delivery failures.
-- Redis health.
-- MongoDB health.
-
-### User Management
-
-Admin should be able to:
-
-- Search users by email/name.
-- View user profile.
-- View focus stats.
-- View tasks count.
-- View session history.
-- View XP log.
-- View badges.
-- Promote/demote admin role.
-- Disable or reactivate accounts.
-- Trigger password reset email.
-
-### Analytics Admin
-
-Admin analytics should include:
-
-- Daily active users.
-- Weekly active users.
-- Focus minutes trend.
-- Task completion trend.
-- Distraction trend.
-- Burnout risk count.
-- Most distracting websites.
-- Most productive websites.
-- Extension usage.
-
-### Admin Audit Log
-
-Add an audit log model before launching admin controls:
-
-```txt
-actor: admin user id
-action: string
-targetType: user/task/session/system
-targetId: object id
-metadata: object
-createdAt: date
-```
-
-Log actions like:
-
-- Role changed.
-- User disabled.
-- User reactivated.
-- Mission regenerated.
-- System config changed.
-
-### Admin UI Style
-
-Keep admin UI practical and dense:
-
-- Sidebar navigation.
-- Compact metric cards.
-- Data tables.
-- Filters.
-- Search.
-- Date range picker.
-- Status badges.
-- Detail drawers/modals.
-- Audit trail timeline.
-
-Avoid marketing-style hero sections for admin. Admin is an operational tool, so it should be fast to scan and action-oriented.
+- **Platform Stats**: Total users, sessions, tasks, and aggregate focus minutes.
+- **Growth Charts**: Daily user acquisition trends with timezone synchronization.
+- **User Management**: Search, role updates (User/Admin), and account termination.
+- **Directives**: Admin-assigned tasks with elevated XP rewards (20 XP).
+- **Audit Trail**: Real-time logging of all administrative actions with target tracking.
+- **Accessibility**: Automatic fallback for the primary admin email to prevent lockout.
 
 ## Local Setup
 

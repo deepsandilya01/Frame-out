@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { gsap } from 'gsap';
 import { Link } from 'react-router-dom';
@@ -67,13 +67,40 @@ export default function DashboardPage() {
   const stats    = dashboard.stats?.userStats;
   const focusStats = dashboard.stats?.focusStats;
   const tasks    = dashboard.recentTasks;
-  const sessions = dashboard.weeklyFocus;
+  
+  // Aggregated Weekly Data (Timer + Extension)
+  const weekData = useMemo(() => {
+    const data = DAY_LABELS.map(day => ({ day, minutes: 0 }));
+    
+    // 1. Add Timer Sessions
+    const sessions = dashboard.weeklyFocus?.sessions || [];
+    sessions.forEach(s => {
+      const d = new Date(s.startedAt);
+      let dayIdx = d.getDay() - 1; // Mon=0, Tue=1...
+      if (dayIdx === -1) dayIdx = 6; // Sun=6
+      if (dayIdx >= 0 && dayIdx < 7) {
+        data[dayIdx].minutes += (s.duration || 0);
+      }
+    });
 
-  // Build weekly bar data
-  const weekData = DAY_LABELS.map((day, i) => ({
-    day,
-    minutes: sessions[i]?.duration || 0,
-  }));
+    // 2. Add Extension Productive Time
+    const activityWeek = dashboard.weeklyFocus?.activityWeek || [];
+    activityWeek.forEach(act => {
+      const d = new Date(act.date);
+      let dayIdx = d.getDay() - 1;
+      if (dayIdx === -1) dayIdx = 6;
+      if (dayIdx >= 0 && dayIdx < 7) {
+        data[dayIdx].minutes += Math.round((act.productiveTime || 0) / 60);
+      }
+    });
+
+    return data;
+  }, [dashboard.weeklyFocus]);
+
+  const todayIdx = useMemo(() => {
+    let idx = new Date().getDay() - 1;
+    return idx === -1 ? 6 : idx;
+  }, []);
 
   const greeting = () => {
     const h = new Date().getHours();
@@ -185,8 +212,8 @@ export default function DashboardPage() {
               <Bar dataKey="minutes" radius={[4, 4, 0, 0]}>
                 {weekData.map((_, i) => (
                   <Cell key={i}
-                    fill={i === new Date().getDay() - 1 ? 'var(--theme-accent)' : 'rgba(255,255,255,0.06)'}
-                    style={i === new Date().getDay() - 1 ? { filter: 'drop-shadow(0 0 4px var(--theme-accent))' } : {}}
+                    fill={i === todayIdx ? 'var(--theme-accent)' : 'rgba(255,255,255,0.06)'}
+                    style={i === todayIdx ? { filter: 'drop-shadow(0 0 4px var(--theme-accent))' } : {}}
                   />
                 ))}
               </Bar>
