@@ -1,6 +1,6 @@
 import userModel from "../models/user.model.js";
 import jwt from "jsonwebtoken";
-import { config } from "../config/config.js";
+import { config, getFrontendUrl } from "../config/config.js";
 import { sendEmail } from "../services/mail.service.js";
 import { getVerificationEmail, getPasswordResetEmail } from "../utils/emailTemplates.js";
 import redis from "../config/cache.js";
@@ -54,7 +54,7 @@ export const register = asyncHandler(async (req, res) => {
   });
 
   const verifyToken = jwt.sign({ email: user.email }, config.JWT_SECRET, { expiresIn: "1h" });
-  const verifyUrl = `${config.FRONTEND_URL || "http://localhost:5173"}/verify-email?token=${verifyToken}`;
+  const verifyUrl = `${getFrontendUrl(req)}/verify-email?token=${verifyToken}`;
 
   try {
     await sendEmail({
@@ -141,7 +141,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   user.resetPasswordExpire = Date.now() + 3600000;
   await user.save();
 
-  const resetUrl = `${config.FRONTEND_URL || "http://localhost:5173"}/reset-password?token=${resetToken}`;
+  const resetUrl = `${getFrontendUrl(req)}/reset-password?token=${resetToken}`;
 
   await sendEmail({
     to: email,
@@ -203,7 +203,10 @@ export const googleCallback = asyncHandler(async (req, res) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  res.redirect(config.FRONTEND_URL || "http://localhost:5173");
+  const redirectUrl =
+    config.NODE_ENV === "development" ? config.LOCAL_FRONTEND_URL : config.FRONTEND_URL;
+
+  res.redirect(redirectUrl);
 });
 
 // @desc    Resend verification email
@@ -216,7 +219,7 @@ export const resendVerification = asyncHandler(async (req, res) => {
   if (user.verified) return res.status(400).json({ message: "Already verified", success: false });
 
   const verifyToken = jwt.sign({ email: user.email }, config.JWT_SECRET, { expiresIn: "1h" });
-  const verifyUrl = `${config.FRONTEND_URL || "http://localhost:5173"}/verify-email?token=${verifyToken}`;
+  const verifyUrl = `${getFrontendUrl(req)}/verify-email?token=${verifyToken}`;
 
   await sendEmail({
     to: email,

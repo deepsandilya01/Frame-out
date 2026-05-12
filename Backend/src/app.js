@@ -41,11 +41,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173", 
-      "http://localhost:5174",
-      config.FRONTEND_URL // Allow production URL
-    ].filter(Boolean),
+    origin: config.FRONTEND_ORIGINS,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
   }),
