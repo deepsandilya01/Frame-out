@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../../../lib/api';
 
 const apiClient = axios.create({
-  baseURL: '/api/auth',
+  baseURL: `${API_BASE_URL}/auth`,
   withCredentials: true,
 });
 
@@ -47,6 +48,6 @@ export const authService = {
   },
   
   getGoogleAuthUrl: () => {
-    return '/api/auth/google';
+    return `${API_BASE_URL}/auth/google`;
   }
 };
