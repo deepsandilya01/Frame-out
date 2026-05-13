@@ -103,6 +103,29 @@ class GamificationService {
   }
 
   /**
+   * Apply XP penalty for a deleted or missed-deadline task
+   */
+  async applyTaskPenalty(userId, penaltyAmount = 5, reason = "TASK_DELETED") {
+    try {
+      let stats = await UserStatsModel.findOne({ user: userId });
+      if (!stats) stats = await UserStatsModel.create({ user: userId });
+
+      // Deduct XP (negative value), floor at 0 (handled inside addXP)
+      stats.addXP(-Math.abs(penaltyAmount), reason);
+
+      await stats.save();
+
+      // Sync level to User model
+      await userModel.findByIdAndUpdate(userId, { $set: { level: stats.level } });
+
+      return { stats, xpLost: penaltyAmount, reason };
+    } catch (err) {
+      console.error("Task Penalty Error:", err);
+      throw err;
+    }
+  }
+
+  /**
    * Award rewards for a completed task
    */
   async awardTaskRewards(userId, xpReward = XP_REWARDS.TASK_COMPLETED) {

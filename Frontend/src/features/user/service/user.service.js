@@ -21,6 +21,8 @@ export const userService = {
   updateTask:  (id, data) => api.put(`/tasks/update/${id}`, data).then(r => r.data),
   patchStatus: (id, status) => api.patch(`/tasks/${id}/status`, { status }).then(r => r.data),
   deleteTask:  (id)     => api.delete(`/tasks/delete/${id}`).then(r => r.data),
+  // Apply penalty for missed deadline (new endpoint)
+  missDeadline: (id) => api.patch(`/tasks/${id}/miss-deadline`).then(r => r.data),
 
   // ─── FOCUS SESSIONS ───────────────────────────────────────────────────────
   startFocus:     (data) => api.post('/focus/start', data).then(r => r.data),

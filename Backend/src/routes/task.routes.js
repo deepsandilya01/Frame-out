@@ -12,6 +12,7 @@ import {
   updateTask,
   deleteTask,
   updateTaskStatus,
+  missDeadlinePenalty,
 } from "../controllers/task.controller.js";
 
 const taskRouter = Router();
@@ -52,5 +53,12 @@ taskRouter.delete("/delete/:id", authenticateUser, deleteTask);
  * @access  Private
  */
 taskRouter.patch("/:id/status", authenticateUser, validationMiddleware(updateTaskStatusValidator), updateTaskStatus);
+
+/**
+ * @route   PATCH /api/tasks/:id/miss-deadline
+ * @desc    Apply penalty for a missed deadline task
+ * @access  Private
+ */
+taskRouter.patch("/:id/miss-deadline", authenticateUser, missDeadlinePenalty);
 
 export default taskRouter;

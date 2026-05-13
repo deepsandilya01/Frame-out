@@ -126,7 +126,7 @@ export const updateTask = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Delete task
+// @desc    Delete task  (applies penalty if task was NOT completed)
 // @route   DELETE /api/tasks/delete/:id
 export const deleteTask = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -136,8 +136,57 @@ export const deleteTask = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Task not found", success: false });
   }
 
+  // Apply penalty only when a non-completed task is deleted
+  let gamification = null;
+  if (task.status !== "completed") {
+    const penaltyAmt = task.penalty || 5;
+    const result = await gamificationService.applyTaskPenalty(
+      req.user._id,
+      penaltyAmt,
+      "TASK_DELETED"
+    );
+    gamification = {
+      xpLost: penaltyAmt,
+      level: result.stats.level,
+      reason: "Task deleted before completion",
+    };
+  }
+
   res.status(200).json({
     message: "Task deleted successfully",
     success: true,
+    gamification,
+  });
+});
+
+// @desc    Apply penalty for a missed deadline task
+// @route   PATCH /api/tasks/:id/miss-deadline
+export const missDeadlinePenalty = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const task = await taskModel.findOne({ _id: id, user: req.user._id });
+
+  if (!task) {
+    return res.status(404).json({ message: "Task not found", success: false });
+  }
+
+  if (task.status === "completed") {
+    return res.status(400).json({ message: "Task already completed, no penalty applied", success: false });
+  }
+
+  const penaltyAmt = task.penalty || 5;
+  const result = await gamificationService.applyTaskPenalty(
+    req.user._id,
+    penaltyAmt,
+    "DEADLINE_MISSED"
+  );
+
+  res.status(200).json({
+    message: "Deadline penalty applied",
+    success: true,
+    gamification: {
+      xpLost: penaltyAmt,
+      level: result.stats.level,
+      reason: "Missed task deadline",
+    },
   });
 });
