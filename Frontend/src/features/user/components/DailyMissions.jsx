@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { Target, RefreshCw, CheckCircle2, Circle, Zap, Loader2 } from 'lucide-react';
 import { userService } from '../service/user.service';
+import { setUserStats } from '../state/user.store';
 import { gsap } from 'gsap';
 
 const DIFF_META = {
@@ -14,6 +16,7 @@ const CAT_EMOJI = {
 };
 
 export default function DailyMissions({ onXPEarned }) {
+  const dispatch = useDispatch();
   const [missions,  setMissions]  = useState([]);
   const [loading,   setLoading]   = useState(true);
   const [regen,     setRegen]     = useState(false);
@@ -36,6 +39,7 @@ export default function DailyMissions({ onXPEarned }) {
     try {
       const res = await userService.completeMission(mission._id);
       setMissions(res.missions || []);
+      if (res.stats) dispatch(setUserStats(res.stats));
       if (onXPEarned) onXPEarned(res.xpEarned || 0);
 
       // Small bounce animation on the card

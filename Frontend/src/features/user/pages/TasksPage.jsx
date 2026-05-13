@@ -169,7 +169,11 @@ export default function TasksPage() {
                     </span>
 
                     {/* Gamification Stats */}
-                    {task.status === 'completed' ? (
+                    {task.deadlinePenaltyAppliedAt ? (
+                       <span className="text-[10px] text-red-400/80 flex items-center gap-1 font-medium bg-red-500/10 px-2 py-0.5 rounded-full">
+                         <AlertTriangle size={9}/> Penalty applied: -{task.penalty || 5} XP
+                       </span>
+                    ) : task.status === 'completed' ? (
                        <span className="text-[10px] text-green-400 flex items-center gap-1 font-medium bg-green-400/10 px-2 py-0.5 rounded-full">
                          <Zap size={9} fill="currentColor"/> +{task.xpReward} XP
                        </span>

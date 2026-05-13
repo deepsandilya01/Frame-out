@@ -28,13 +28,21 @@ function Badge({ badge }) {
   );
 }
 
-function XPBar({ xp, level }) {
-  const needed = level * 150;
-  const pct = Math.min((xp / needed) * 100, 100);
+function XPBar({ stats }) {
+  const xp = stats?.xp || 0;
+  const level = stats?.level || 1;
+  const currentLevelXp = stats?.currentLevelXp || 0;
+  const nextLevelXp = stats?.nextLevelXp || (level * 150);
+  const xpToNextLevel = stats?.xpToNextLevel ?? Math.max(0, nextLevelXp - xp);
+  const levelRange = Math.max(1, nextLevelXp - currentLevelXp);
+  const pct = xpToNextLevel > 0
+    ? Math.min(Math.max(((xp - currentLevelXp) / levelRange) * 100, 0), 100)
+    : 100;
+
   return (
     <div className="w-full">
       <div className="flex justify-between text-[10px] sm:text-xs text-[#849495] mb-1.5">
-        <span>{xp} XP</span><span>{needed} XP to Lv.{level + 1}</span>
+        <span>{xp} XP</span><span>{xpToNextLevel} XP to Lv.{level + 1}</span>
       </div>
       <div className="h-2 rounded-full bg-white/5 overflow-hidden">
         <div className="h-full rounded-full transition-all duration-700"
@@ -71,7 +79,7 @@ export default function ProfilePage() {
             </div>
             <p className="text-[#849495] text-sm mb-5">{authUser?.email}</p>
 
-            {stats && <XPBar xp={stats.xp} level={stats.level} />}
+            {stats && <XPBar stats={stats} />}
 
             {/* Quick stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-6">

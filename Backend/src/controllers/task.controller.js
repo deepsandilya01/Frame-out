@@ -2,6 +2,40 @@ import taskModel from "../models/task.model.js";
 import { gamificationService } from "../services/gamification.service.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
+const isPastDeadline = (deadline) => {
+  if (!deadline) return false;
+
+  const dueDate = new Date(deadline);
+  if (Number.isNaN(dueDate.getTime())) return false;
+
+  const today = new Date();
+  dueDate.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+
+  return dueDate < today;
+};
+
+const didMissDeadline = (task) => {
+  if (!task?.deadline) return false;
+
+  const dueDate = new Date(task.deadline);
+  if (Number.isNaN(dueDate.getTime())) return false;
+  dueDate.setHours(0, 0, 0, 0);
+
+  if (task.status === "completed") {
+    if (!task.completedAt) return false;
+    const completedAt = new Date(task.completedAt);
+    if (Number.isNaN(completedAt.getTime())) return false;
+    completedAt.setHours(0, 0, 0, 0);
+    return dueDate < completedAt;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return dueDate < today;
+};
+
+
 // @desc    Get all tasks
 // @route   GET /api/tasks/view
 export const viewTasks = asyncHandler(async (req, res) => {
@@ -85,14 +119,32 @@ export const updateTaskStatus = asyncHandler(async (req, res) => {
   let gamification = null;
   if (status === "completed" && oldStatus !== "completed") {
     task.completedAt = new Date();
-    // Award XP via Service using task's specific reward
-    const result = await gamificationService.awardTaskRewards(req.user._id, task.xpReward);
-    gamification = {
-      xpGained: task.xpReward,
-      level: result.stats.level,
-      leveledUp: result.leveled,
-      newBadges: result.newBadges,
-    };
+
+    if (isPastDeadline(task.deadline)) {
+      if (!task.deadlinePenaltyAppliedAt) {
+        const penaltyAmt = task.penalty || 5;
+        const result = await gamificationService.applyTaskPenalty(
+          req.user._id,
+          penaltyAmt,
+          "DEADLINE_MISSED"
+        );
+        task.deadlinePenaltyAppliedAt = new Date();
+        gamification = {
+          xpLost: penaltyAmt,
+          level: result.stats.level,
+          reason: "Missed task deadline",
+        };
+      }
+    } else {
+      // Award XP via Service using task's specific reward
+      const result = await gamificationService.awardTaskRewards(req.user._id, task.xpReward);
+      gamification = {
+        xpGained: task.xpReward,
+        level: result.stats.level,
+        leveledUp: result.leveled,
+        newBadges: result.newBadges,
+      };
+    }
   }
 
   await task.save();
@@ -169,20 +221,63 @@ export const missDeadlinePenalty = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Task not found", success: false });
   }
 
-  if (task.status === "completed") {
-    return res.status(400).json({ message: "Task already completed, no penalty applied", success: false });
+  if (!didMissDeadline(task)) {
+    return res.status(400).json({ message: "Task deadline has not been missed", success: false });
   }
 
-  const penaltyAmt = task.penalty || 5;
-  const result = await gamificationService.applyTaskPenalty(
-    req.user._id,
-    penaltyAmt,
-    "DEADLINE_MISSED"
+  if (task.deadlinePenaltyAppliedAt) {
+    return res.status(200).json({
+      message: "Deadline penalty already applied",
+      success: true,
+      task,
+      gamification: null,
+    });
+  }
+
+  const appliedAt = new Date();
+  const markedTask = await taskModel.findOneAndUpdate(
+    {
+      _id: id,
+      user: req.user._id,
+      $or: [
+        { deadlinePenaltyAppliedAt: { $exists: false } },
+        { deadlinePenaltyAppliedAt: null },
+      ],
+    },
+    { $set: { deadlinePenaltyAppliedAt: appliedAt } },
+    { new: true }
   );
+
+  if (!markedTask) {
+    const latestTask = await taskModel.findOne({ _id: id, user: req.user._id });
+    return res.status(200).json({
+      message: "Deadline penalty already applied",
+      success: true,
+      task: latestTask,
+      gamification: null,
+    });
+  }
+
+  const penaltyAmt = markedTask.penalty || 5;
+  let result;
+  try {
+    result = await gamificationService.applyTaskPenalty(
+      req.user._id,
+      penaltyAmt,
+      "DEADLINE_MISSED"
+    );
+  } catch (err) {
+    await taskModel.updateOne(
+      { _id: id, user: req.user._id, deadlinePenaltyAppliedAt: appliedAt },
+      { $unset: { deadlinePenaltyAppliedAt: "" } }
+    );
+    throw err;
+  }
 
   res.status(200).json({
     message: "Deadline penalty applied",
     success: true,
+    task: markedTask,
     gamification: {
       xpLost: penaltyAmt,
       level: result.stats.level,

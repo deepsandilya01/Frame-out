@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { normalizeUserStats } from '../utils/levelProgress';
 
 const initialState = {
   // Theme
@@ -92,7 +93,13 @@ const userSlice = createSlice({
 
     // Dashboard
     setDashboardLoading: (state, action) => { state.dashboard.loading = action.payload; },
-    setDashboardStats:   (state, action) => { state.dashboard.stats = action.payload; state.dashboard.loading = false; },
+    setDashboardStats:   (state, action) => {
+      state.dashboard.stats = {
+        ...action.payload,
+        userStats: normalizeUserStats(action.payload?.userStats),
+      };
+      state.dashboard.loading = false;
+    },
     setAiInsight:        (state, action) => { state.dashboard.aiInsight = action.payload; },
     setRecentTasks:      (state, action) => { state.dashboard.recentTasks = action.payload; },
     setWeeklyFocus:      (state, action) => { state.dashboard.weeklyFocus = action.payload; },
@@ -139,7 +146,7 @@ const userSlice = createSlice({
 
     // UserStats
     setStatsLoading: (state, action) => { state.userStats.loading = action.payload; },
-    setUserStats:    (state, action) => { state.userStats.data = action.payload; state.userStats.loading = false; },
+    setUserStats:    (state, action) => { state.userStats.data = normalizeUserStats(action.payload); state.userStats.loading = false; },
     setBadges:       (state, action) => { state.userStats.badges = action.payload; },
     setXPLog:        (state, action) => { state.userStats.xpLog = action.payload; },
     setStatsError:   (state, action) => { state.userStats.error = action.payload; state.userStats.loading = false; },

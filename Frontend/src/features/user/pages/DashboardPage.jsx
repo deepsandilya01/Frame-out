@@ -28,12 +28,20 @@ function StatCard({ label, value, sub, icon: Icon, accent, children }) {
   );
 }
 
-function XPBar({ xp, nextLevel }) {
-  const pct = nextLevel > 0 ? Math.min((xp / nextLevel) * 100, 100) : 100;
+function XPBar({ stats }) {
+  const xp = stats?.xp || 0;
+  const currentLevelXp = stats?.currentLevelXp || 0;
+  const nextLevelXp = stats?.nextLevelXp || ((stats?.level || 1) * 150);
+  const xpToNextLevel = stats?.xpToNextLevel ?? Math.max(0, nextLevelXp - xp);
+  const levelRange = Math.max(1, nextLevelXp - currentLevelXp);
+  const pct = xpToNextLevel > 0
+    ? Math.min(Math.max(((xp - currentLevelXp) / levelRange) * 100, 0), 100)
+    : 100;
+
   return (
     <div>
       <div className="flex justify-between text-[10px] text-[#849495] mb-1">
-        <span>{xp} XP</span><span>{nextLevel} XP</span>
+        <span>{xp} XP</span><span>{xpToNextLevel} XP to next</span>
       </div>
       <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
         <div className="h-full rounded-full transition-all duration-700"
@@ -161,7 +169,7 @@ export default function DashboardPage() {
           <StatCard label="XP LEVEL" icon={Zap}
             value={`Lv. ${stats?.level || 1}`}
             sub={`${stats?.xp || 0} total XP`}>
-            <XPBar xp={stats?.xp || 0} nextLevel={(stats?.level || 1) * 150} />
+            <XPBar stats={stats} />
           </StatCard>
         </div>
       )}

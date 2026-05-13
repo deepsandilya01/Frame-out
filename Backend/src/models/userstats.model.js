@@ -15,6 +15,28 @@ export const LEVEL_THRESHOLDS = (function() {
   return thresholds;
 })();
 
+export const getLevelProgress = (xp = 0) => {
+  const safeXP = Math.max(0, Number(xp) || 0);
+  let level = 1;
+
+  while (
+    level < LEVEL_THRESHOLDS.length &&
+    safeXP >= LEVEL_THRESHOLDS[level]
+  ) {
+    level += 1;
+  }
+
+  const currentLevelXp = level > 1 ? LEVEL_THRESHOLDS[level - 1] : 0;
+  const nextLevelXp = level < LEVEL_THRESHOLDS.length ? LEVEL_THRESHOLDS[level] : currentLevelXp;
+
+  return {
+    level,
+    currentLevelXp,
+    nextLevelXp,
+    xpToNextLevel: level < LEVEL_THRESHOLDS.length ? Math.max(0, nextLevelXp - safeXP) : 0,
+  };
+};
+
 // ---------------------------------------------------------------------------
 // XP reward values
 // ---------------------------------------------------------------------------
@@ -175,23 +197,22 @@ userStatsSchema.methods.addXP = function (amount, reason) {
   this.xpLog.push({ amount, reason, earnedAt: new Date() });
   if (this.xpLog.length > 100) this.xpLog.shift();
 
-  // Level-up check
-  let leveled = false;
-  while (
-    this.level < LEVEL_THRESHOLDS.length &&
-    this.xp >= LEVEL_THRESHOLDS[this.level] // index = next level threshold
-  ) {
-    this.level += 1;
-    leveled = true;
-  }
+  const previousLevel = this.level;
+  const progress = getLevelProgress(this.xp);
+  this.level = progress.level;
+  this.xpToNextLevel = progress.xpToNextLevel;
 
-  // xpToNextLevel
-  this.xpToNextLevel =
-    this.level < LEVEL_THRESHOLDS.length
-      ? LEVEL_THRESHOLDS[this.level] - this.xp
-      : 0; // max level
+  return this.level > previousLevel;
+};
 
-  return leveled;
+userStatsSchema.methods.syncLevelProgress = function () {
+  const progress = getLevelProgress(this.xp);
+  const changed = this.level !== progress.level || this.xpToNextLevel !== progress.xpToNextLevel;
+
+  this.level = progress.level;
+  this.xpToNextLevel = progress.xpToNextLevel;
+
+  return changed;
 };
 
 // ---------------------------------------------------------------------------

@@ -49,6 +49,10 @@ const taskSchema = new mongoose.Schema(
       default: 5,
     },
 
+    deadlinePenaltyAppliedAt: {
+      type: Date,
+    },
+
     tags: [String],
   },
   {

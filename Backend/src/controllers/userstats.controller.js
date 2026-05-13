@@ -1,4 +1,4 @@
-import UserStatsModel, { XP_REWARDS, BADGE_DEFINITIONS, LEVEL_THRESHOLDS } from "../models/userstats.model.js";
+import UserStatsModel, { XP_REWARDS, BADGE_DEFINITIONS, LEVEL_THRESHOLDS, getLevelProgress } from "../models/userstats.model.js";
 import { gamificationService } from "../services/gamification.service.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
@@ -11,6 +11,12 @@ export const getMyStats = asyncHandler(async (req, res) => {
     stats = await UserStatsModel.create({ user: req.user._id });
   }
 
+  if (stats.syncLevelProgress()) {
+    await stats.save();
+  }
+
+  const progress = getLevelProgress(stats.xp);
+
   res.status(200).json({
     message: "User stats retrieved",
     success: true,
@@ -18,6 +24,8 @@ export const getMyStats = asyncHandler(async (req, res) => {
       xp:                     stats.xp,
       level:                  stats.level,
       xpToNextLevel:          stats.xpToNextLevel,
+      currentLevelXp:         progress.currentLevelXp,
+      nextLevelXp:            progress.nextLevelXp,
       currentStreak:          stats.currentStreak,
       longestStreak:          stats.longestStreak,
       totalSessionsCompleted: stats.totalSessionsCompleted,
@@ -158,10 +166,14 @@ export const getLevelMap = asyncHandler(async (_req, res) => {
 
 // Private helpers
 function summarize(stats) {
+  const progress = getLevelProgress(stats.xp);
+
   return {
     xp:            stats.xp,
     level:         stats.level,
     xpToNextLevel: stats.xpToNextLevel,
+    currentLevelXp: progress.currentLevelXp,
+    nextLevelXp:    progress.nextLevelXp,
     currentStreak: stats.currentStreak,
     longestStreak: stats.longestStreak,
     badgesCount:   stats.badges.length,
