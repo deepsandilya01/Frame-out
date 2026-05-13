@@ -115,7 +115,7 @@ chrome.runtime.onInstalled.addListener(() => {
 // SMART SCREEN TIME & ACTIVITY TRACKING
 // -----------------------------------------------------------------------------
 
-const BACKEND_URL = "https://hackathon-1-2wnx.onrender.com/api";
+const BACKEND_URL = "https://resilient-enchantment-production.up.railway.app/api";
 let activeTabInfo = null; 
 let activityLog = {}; // { "github.com": { duration: 120, visits: 2, lastUpdated: 123 } }
 let lastSyncTime = Date.now();
