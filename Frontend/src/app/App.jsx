@@ -3,6 +3,7 @@ import { RouterProvider } from 'react-router-dom';
 import { router } from './app.routes';
 import { useCurrentUser } from '../features/auth/hook/useAuthHooks';
 import SplashScreen from '../components/SplashScreen';
+import { Toaster } from 'react-hot-toast';
 
 const AppContent = () => {
   // This hook will check for existing session on app load
@@ -35,7 +36,34 @@ const AppContent = () => {
 
 function App() {
   return (
-    <AppContent />
+    <>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: '#151d1d',
+            color: '#fff',
+            border: '1px solid rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(10px)',
+            fontSize: '14px',
+            borderRadius: '12px',
+          },
+          success: {
+            iconTheme: {
+              primary: '#4ade80',
+              secondary: '#151d1d',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#151d1d',
+            },
+          },
+        }}
+      />
+      <AppContent />
+    </>
   );
 }
 

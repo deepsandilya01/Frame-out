@@ -1,7 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import Sidebar from './Sidebar';
+import Navbar from './Navbar';
+import XPCelebration from './XPCelebration';
+import { useSoundAlerts } from '../hook/useSoundAlerts';
 import { setTheme } from '../state/user.store';
 
 const THEMES = {
@@ -15,7 +18,13 @@ const THEMES = {
 
 export default function AppLayout() {
   const theme    = useSelector(s => s.user.theme);
+  const stats    = useSelector(s => s.user.userStats.data);
   const dispatch = useDispatch();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [levelUpData, setLevelUpData] = useState(null);
+  
+  const { playLevelUp } = useSoundAlerts();
+  const prevLevelRef = React.useRef(stats?.level);
 
   // Apply theme to :root on change
   useEffect(() => {
@@ -35,6 +44,18 @@ export default function AppLayout() {
     root.style.setProperty('--theme-accent-border', t.border);
     root.setAttribute('data-theme', theme);
   }, [theme]);
+
+  // Global Level-Up Detection
+  useEffect(() => {
+    if (stats?.level && prevLevelRef.current && stats.level > prevLevelRef.current) {
+      setLevelUpData({
+        level: stats.level,
+        xp: 100, // Visual placeholder for the "Level Up" XP reward
+      });
+      playLevelUp();
+    }
+    if (stats?.level) prevLevelRef.current = stats.level;
+  }, [stats?.level, playLevelUp]);
 
   // Mark activity on mount
   useEffect(() => {
@@ -59,10 +80,29 @@ export default function AppLayout() {
              style={{ background: 'var(--theme-accent)' }} />
       </div>
 
-      <Sidebar />
+      <Navbar onOpenSidebar={() => setIsSidebarOpen(true)} />
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-      <main className="md:pl-60 min-h-screen relative z-10 w-full overflow-x-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-20 pb-8 md:py-8">
+      {/* Global Celebration Overlay */}
+      {levelUpData && (
+        <XPCelebration 
+          xp={levelUpData.xp}
+          level={levelUpData.level}
+          isLevelUp={true}
+          onDone={() => setLevelUpData(null)}
+        />
+      )}
+
+      {/* Sidebar Backdrop */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/30 z-40"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      <main className="min-h-screen relative z-10 w-full overflow-x-hidden pt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-8 pb-8">
           <Outlet />
         </div>
       </main>

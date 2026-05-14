@@ -79,6 +79,12 @@ const initialState = {
     loading: false,
     error: null,
   },
+
+  // Notifications
+  notifications: {
+    list: JSON.parse(localStorage.getItem('fo-notifications') || '[]'),
+    unreadCount: 0,
+  },
 };
 
 const userSlice = createSlice({
@@ -162,6 +168,25 @@ const userSlice = createSlice({
     setLeaderboardLoading: (state, action) => { state.leaderboard.loading = action.payload; },
     setLeaderboard:        (state, action) => { state.leaderboard.list = action.payload; state.leaderboard.loading = false; },
     setLeaderboardError:   (state, action) => { state.leaderboard.error = action.payload; state.leaderboard.loading = false; },
+
+    // Notifications
+    addNotification: (state, action) => {
+      const newNotif = { id: Date.now(), ...action.payload, read: false, createdAt: new Date().toISOString() };
+      state.notifications.list.unshift(newNotif);
+      state.notifications.unreadCount += 1;
+      state.notifications.list = state.notifications.list.slice(0, 50);
+      localStorage.setItem('fo-notifications', JSON.stringify(state.notifications.list));
+    },
+    markNotificationsRead: (state) => {
+      state.notifications.list.forEach(n => n.read = true);
+      state.notifications.unreadCount = 0;
+      localStorage.setItem('fo-notifications', JSON.stringify(state.notifications.list));
+    },
+    clearNotifications: (state) => {
+      state.notifications.list = [];
+      state.notifications.unreadCount = 0;
+      localStorage.removeItem('fo-notifications');
+    },
   },
 });
 
@@ -176,6 +201,7 @@ export const {
   setStatsLoading, setUserStats, setBadges, setXPLog, setStatsError,
   setAILoading, setAIAnalysis, setAISuggestions, setAIWeeklyReport, setAIError,
   setLeaderboardLoading, setLeaderboard, setLeaderboardError,
+  addNotification, markNotificationsRead, clearNotifications,
 } = userSlice.actions;
 
 export default userSlice.reducer;

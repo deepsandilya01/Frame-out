@@ -24,8 +24,7 @@ const BOTTOM_NAV = [
   { to: '/settings',   icon: Settings,          label: 'Settings' },
 ];
 
-export default function Sidebar() {
-  const [isOpen, setIsOpen] = useState(false);
+export default function Sidebar({ isOpen, onClose }) {
   const { handleLogout } = useAppLogout();
   const user  = useSelector(s => s.auth.user);
   const stats = useSelector(s => s.user.userStats.data);
@@ -42,7 +41,7 @@ export default function Sidebar() {
     return (
       <NavLink
         to={to}
-        onClick={() => setIsOpen(false)}
+        onClick={onClose}
         className={`group flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 relative overflow-hidden ${
           active
             ? 'text-accent bg-accent-dim border border-accent/20'
@@ -61,35 +60,16 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile Toggle Button */}
-      <button 
-        onClick={() => setIsOpen(true)}
-        aria-label="Open navigation menu"
-        aria-expanded={isOpen}
-        aria-controls="sidebar-nav"
-        className="md:hidden fixed top-4 left-4 z-50 p-2.5 glass-glow rounded-xl text-white active:scale-95 transition-all"
-      >
-        <Menu size={22} aria-hidden="true" />
-      </button>
-
-      {/* Backdrop */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-
       <aside className={`fixed top-0 h-screen w-60 flex flex-col z-50 transition-all duration-300 border-r border-white/5 ${
-        isOpen ? 'left-0' : '-left-full md:left-0'
+        isOpen ? 'left-0' : '-left-full'
       }`}
       style={{ background: 'rgba(8,8,8,0.98)', backdropFilter: 'blur(20px)' }}>
         
-        {/* Close button (mobile only) */}
+        {/* Close button */}
         <button 
-          onClick={() => setIsOpen(false)}
+          onClick={onClose}
           aria-label="Close navigation menu"
-          className="md:hidden absolute top-5 right-4 text-[#849495] hover:text-white"
+          className="absolute top-5 right-4 text-[#849495] hover:text-white"
         >
           <X size={20} aria-hidden="true" />
         </button>

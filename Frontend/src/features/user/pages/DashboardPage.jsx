@@ -53,6 +53,7 @@ function XPBar({ stats }) {
 
 export default function DashboardPage() {
   const cardsRef = useRef(null);
+  const hasAnimated = useRef(false);
   const { dashboard, loadDashboard, loadAIInsight } = useDashboard();
   const user    = useSelector(s => s.auth.user);
   const ai      = useSelector(s => s.user.dashboard.aiInsight);
@@ -60,16 +61,21 @@ export default function DashboardPage() {
   useEffect(() => {
     loadDashboard();
     loadAIInsight();
-  }, []);
+    const interval = setInterval(() => {
+      loadDashboard(true);
+    }, 10000); // 10s silent polling
+    return () => clearInterval(interval);
+  }, [loadDashboard, loadAIInsight]);
 
-  // GSAP entrance animation
+  // GSAP entrance animation - only once when data arrives
   useEffect(() => {
-    if (!cardsRef.current) return;
+    if (!cardsRef.current || hasAnimated.current || !dashboard.stats) return;
     const cards = cardsRef.current.querySelectorAll('.stat-card, .content-card');
     gsap.fromTo(cards,
       { opacity: 0, y: 24 },
       { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: 'power2.out' }
     );
+    hasAnimated.current = true;
   }, [dashboard.stats]);
 
   const stats    = dashboard.stats?.userStats;

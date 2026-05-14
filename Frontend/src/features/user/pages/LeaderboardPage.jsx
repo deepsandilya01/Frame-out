@@ -23,6 +23,10 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     fetchLeaderboard();
+    const interval = setInterval(() => {
+      fetchLeaderboard(true);
+    }, 10000); // 10s silent polling
+    return () => clearInterval(interval);
   }, [fetchLeaderboard]);
 
   // Find current user's rank by matching fullname (backend only returns fullname)

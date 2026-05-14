@@ -33,13 +33,13 @@ export function useLeaderboard() {
   const dispatch = useDispatch();
   const { list, loading, error } = useSelector(s => s.user.leaderboard);
 
-  const fetchLeaderboard = useCallback(async () => {
-    dispatch(setLeaderboardLoading(true));
+  const fetchLeaderboard = useCallback(async (isSilent = false) => {
+    if (!isSilent) dispatch(setLeaderboardLoading(true));
     try {
       const res = await userService.getLeaderboard();
       dispatch(setLeaderboard(res.leaderboard || []));
     } catch (err) {
-      dispatch(setLeaderboardError(err.message));
+      if (!isSilent) dispatch(setLeaderboardError(err.message));
     }
   }, [dispatch]);
 

@@ -3,7 +3,6 @@ import { Play, Square, RotateCcw, Zap, Flame, Maximize2, Wind, Brain, Target, Cl
 import { useFocus } from '../hook/useFocus';
 import DeepWorkMode     from '../components/DeepWorkMode';
 import BreathingWidget  from '../components/BreathingWidget';
-import XPCelebration   from '../components/XPCelebration';
 import { useSoundAlerts } from '../hook/useSoundAlerts';
 
 function CircularTimer({ seconds, totalSeconds, size = 200 }) {
@@ -51,7 +50,6 @@ export default function FocusPage() {
   const [aiSuggestion, setAiSuggestion]  = useState(null);
   const [aiLoading,    setAiLoading]     = useState(false);
   const [lofiPlaying,  setLofiPlaying]   = useState(false);
-  const [celebration,  setCelebration]   = useState(null); // { xp, level, isLevelUp, badges }
 
   const { muted, toggleMute, playComplete, playBreakStart, playTick, playLevelUp } = useSoundAlerts();
 
@@ -137,16 +135,10 @@ export default function FocusPage() {
       if (res.gamification) {
         setGamification(res.gamification);
         const g = res.gamification;
-        // 🎉 Show XP celebration
+        // Celebration handled globally by AppLayout level listener
         if (g.xpEarned > 0) {
           if (g.leveledUp) playLevelUp();
           else playComplete();
-          setCelebration({
-            xp:        g.xpEarned,
-            level:     g.level,
-            isLevelUp: g.leveledUp || false,
-            badges:    g.newBadges || [],
-          });
         }
       }
     } catch (err) { alert('Could not end session: ' + err.message); }
@@ -166,16 +158,6 @@ export default function FocusPage() {
 
   return (
     <div className="space-y-6">
-      {/* XP Celebration Overlay */}
-      {celebration && (
-        <XPCelebration
-          xp={celebration.xp}
-          level={celebration.level}
-          isLevelUp={celebration.isLevelUp}
-          badges={celebration.badges}
-          onDone={() => setCelebration(null)}
-        />
-      )}
 
       {/* Deep Work Mode overlay */}
       {deepWork && activeSession && (

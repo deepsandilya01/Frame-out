@@ -51,10 +51,10 @@ export const userService = {
   getHeatmapRange:(from, to) => api.get('/heatmap/range', { params: { from, to } }).then(r => r.data),
 
   // ─── USER STATS ───────────────────────────────────────────────────────────
-  getUserStats:   () => api.get('/userstats/me').then(r => r.data),
+  getUserStats:   () => api.get(`/userstats/me?t=${Date.now()}`).then(r => r.data),
   getBadges:      () => api.get('/userstats/badges').then(r => r.data),
   getXPLog:       () => api.get('/userstats/xp-log').then(r => r.data),
-  getLeaderboard: () => api.get('/userstats/leaderboard').then(r => r.data),
+  getLeaderboard: () => api.get(`/userstats/leaderboard?t=${Date.now()}`).then(r => r.data),
   getLevelMap:    () => api.get('/userstats/level-map').then(r => r.data),
 
   // ─── AI COACH ─────────────────────────────────────────────────────────────

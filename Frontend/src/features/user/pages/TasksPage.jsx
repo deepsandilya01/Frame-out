@@ -113,8 +113,14 @@ export default function TasksPage() {
                 
                 {/* Status Toggle Button */}
                 <button 
-                  onClick={() => changeStatus(task._id, task.status === 'completed' ? 'pending' : 'completed')}
-                  className={`flex-shrink-0 mt-0.5 transition-colors ${task.status === 'completed' ? 'text-accent' : task.status === 'in-progress' ? 'text-orange-400' : 'text-[#849495] hover:text-accent'}`}>
+                  onClick={() => {
+                    if (task.status === 'completed') {
+                      import('react-hot-toast').then(({ toast }) => toast.success("This task is already completed! Well done."));
+                      return;
+                    }
+                    changeStatus(task._id, 'completed');
+                  }}
+                  className={`flex-shrink-0 mt-0.5 transition-colors ${task.status === 'completed' ? 'text-accent cursor-default' : task.status === 'in-progress' ? 'text-orange-400' : 'text-[#849495] hover:text-accent'}`}>
                   {task.status === 'completed' ? <CheckCircle2 size={18} /> : task.status === 'in-progress' ? <Clock size={18} /> : <Circle size={18} />}
                 </button>
 

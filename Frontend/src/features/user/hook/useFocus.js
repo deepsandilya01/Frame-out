@@ -4,7 +4,7 @@ import { userService } from '../service/user.service';
 import {
   setFocusLoading, setActiveSession, clearActiveSession,
   setFocusHistories, setFocusStats, setFocusError,
-  setUserStats,
+  setUserStats, addNotification,
 } from '../state/user.store';
 
 export function useFocus() {
@@ -17,6 +17,12 @@ export function useFocus() {
     try {
       const res = await userService.startFocus(data);
       dispatch(setActiveSession(res.session));
+      dispatch(addNotification({
+        title: 'Focus Protocol Initiated',
+        message: `Concentration sequence started. Stay focused for ${data.duration || 'targeted'} minutes.`,
+        type: 'focus',
+        severity: 'low'
+      }));
       return res.session;
     } catch (err) {
       dispatch(setFocusError(err.message));
@@ -29,6 +35,15 @@ export function useFocus() {
     try {
       const res = await userService.endFocus(data);
       dispatch(clearActiveSession());
+      
+      const xpEarned = res.gamification?.xpGained || 0;
+      dispatch(addNotification({
+        title: 'Focus Session Terminated',
+        message: `Neural sequence complete. ${xpEarned > 0 ? `Earned ${xpEarned} XP.` : 'Session logged successfully.'}`,
+        type: 'success',
+        severity: 'medium'
+      }));
+
       // Refresh stats after session ends
       if (res.gamification) {
         const statsRes = await userService.getUserStats();

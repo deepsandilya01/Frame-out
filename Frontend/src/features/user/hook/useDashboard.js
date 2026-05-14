@@ -12,8 +12,8 @@ export function useDashboard() {
   const dashboard = useSelector(s => s.user.dashboard);
   const userStats = useSelector(s => s.user.userStats.data);
 
-  const loadDashboard = useCallback(async () => {
-    dispatch(setDashboardLoading(true));
+  const loadDashboard = useCallback(async (isSilent = false) => {
+    if (!isSilent) dispatch(setDashboardLoading(true));
     try {
       const [statsRes, tasksRes, weekRes, focusStatsRes, todayRes, activityRes] = await Promise.all([
         userService.getUserStats(),
@@ -57,7 +57,7 @@ export function useDashboard() {
         activityWeek: activityRes.data?.week || []
       }));
     } catch (err) {
-      dispatch(setDashboardError(err.message));
+      if (!isSilent) dispatch(setDashboardError(err.message));
     }
   }, [dispatch]);
 
