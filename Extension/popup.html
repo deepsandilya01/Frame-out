@@ -9,7 +9,8 @@
 </head>
 <body class="popup-body">
     <div class="extension-container">
-        <!-- Header with Official Logo -->
+
+        <!-- Header -->
         <header class="header">
             <div class="logo-wrapper">
                 <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -24,32 +25,43 @@
             <div class="version">v1.0</div>
         </header>
 
-        <!-- Focus Timer Card -->
+        <!-- Status Card -->
         <main class="main-content">
             <div class="glass-card timer-card">
-                <div class="timer-display" id="timerDisplay">00:00</div>
-                <div class="timer-label">DEEP WORK SESSION</div>
-                
-                <div class="toggle-container">
-                    <span class="status-label" id="statusText">OFF</span>
-                    <label class="switch">
-                        <input type="checkbox" id="focusToggle">
-                        <span class="slider round"></span>
-                    </label>
+                <div class="timer-display" id="timerDisplay">READY</div>
+                <div class="timer-label" id="timerLabel">ACTIVATE TO FOCUS</div>
+
+                <!-- STATE: Extension OFF → Show "Activate Focus" button -->
+                <div class="action-area" id="stateOff">
+                    <div class="state-badge off">● INACTIVE</div>
+                    <button class="action-btn activate-btn" id="activateBtn">
+                        <span class="btn-icon">⚡</span>
+                        ACTIVATE FOCUS
+                    </button>
+                </div>
+
+                <!-- STATE: Extension ON → Show "Solve Puzzle to Break Free" button -->
+                <div class="action-area" id="stateOn" style="display:none;">
+                    <div class="state-badge on">● ACTIVE — BLOCKING</div>
+                    <button class="action-btn game-btn" id="gameBtn">
+                        <span class="btn-icon">🧩</span>
+                        SOLVE TO UNLOCK
+                    </button>
+                    <p class="game-hint">Solve the puzzle to turn off focus mode</p>
                 </div>
             </div>
 
-            <!-- Stats/Info List -->
+            <!-- Active Blockers List -->
             <div class="glass-card list-card">
                 <h3 class="section-title">ACTIVE BLOCKERS</h3>
                 <ul class="blocked-sites" id="blockedList">
-                    <!-- Sites will be injected by popup.js -->
+                    <!-- Sites injected by popup.js -->
                 </ul>
             </div>
         </main>
 
         <footer class="footer">
-            <button class="settings-btn">SETTINGS</button>
+            <button class="settings-btn" id="settingsBtn">SETTINGS</button>
         </footer>
     </div>
     <script src="popup.js"></script>

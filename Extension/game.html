@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Frame-Out | Puzzle Challenge</title>
+    <link rel="stylesheet" href="game.css" />
+</head>
+<body class="game-body">
+    <div class="game-wrapper">
+
+        <!-- Header -->
+        <header class="game-header">
+            <div class="logo-row">
+                <svg width="22" height="22" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="1" y="1" width="30" height="30" rx="7" stroke="white" stroke-width="1.5" fill="none"/>
+                    <rect x="8" y="8" width="16" height="1.8" rx="0.9" fill="white"/>
+                    <rect x="8" y="8" width="1.8" height="16" rx="0.9" fill="white"/>
+                    <rect x="8" y="14.5" width="11" height="1.8" rx="0.9" fill="white"/>
+                    <circle cx="23.5" cy="23.5" r="2.5" fill="#00F5FF"/>
+                </svg>
+                <span class="brand">FRAME-OUT</span>
+            </div>
+            <span class="challenge-tag">PUZZLE CHALLENGE</span>
+        </header>
+
+        <!-- Screen: Intro -->
+        <div id="screen-intro" class="screen active">
+            <div class="intro-icon">🧩</div>
+            <h1 class="intro-title">SOLVE TO UNLOCK</h1>
+            <p class="intro-sub">Arrange the tiles in ascending order<br/>to deactivate focus mode.</p>
+            <div class="rules-card">
+                <div class="rule"><span class="rule-icon">🔢</span> Slide tiles to match: <strong>1, 2, 3...</strong></div>
+                <div class="rule"><span class="rule-icon">⚡</span> Quick moves earn more focus points</div>
+                <div class="rule"><span class="rule-icon">🏆</span> Solve the <strong>3x3 grid</strong> to win</div>
+            </div>
+            <button id="startBtn" class="cta-btn">START PUZZLE</button>
+        </div>
+
+        <!-- Screen: Game -->
+        <div id="screen-game" class="screen">
+            <div class="hud">
+                <div class="hud-item">
+                    <span class="hud-label">MOVES</span>
+                    <span class="hud-value" id="moveDisplay">0</span>
+                </div>
+                <div class="hud-timer-wrap">
+                    <svg class="timer-ring" viewBox="0 0 60 60">
+                        <circle class="ring-bg" cx="30" cy="30" r="26"/>
+                        <circle class="ring-fill" cx="30" cy="30" r="26" id="ringFill"/>
+                    </svg>
+                    <span class="hud-timer" id="timerDisplay">00:00</span>
+                </div>
+                <div class="hud-item">
+                    <span class="hud-label">LEVEL</span>
+                    <span class="hud-value">3x3</span>
+                </div>
+            </div>
+            
+            <div class="puzzle-container">
+                <div class="puzzle-grid" id="puzzleGrid">
+                    <!-- Tiles injected by JS -->
+                </div>
+            </div>
+
+            <div class="game-footer-actions">
+                <button id="resetBtn" class="cta-btn-ghost">SHUFFLE</button>
+            </div>
+        </div>
+
+        <!-- Screen: Win -->
+        <div id="screen-win" class="screen">
+            <div class="result-icon win-icon">🔓</div>
+            <h2 class="result-title win">PUZZLE SOLVED!</h2>
+            <p class="result-sub">Focus mode deactivated.<br/>Go enjoy your break!</p>
+            <div class="score-reveal" id="winStats"></div>
+            <button id="winCloseBtn" class="cta-btn">DONE</button>
+        </div>
+
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

@@ -99,69 +99,95 @@ body.popup-body {
     color: var(--on-surface-variant);
 }
 
-/* Toggle */
-.toggle-container {
-    margin-top: 8px;
+/* Action Area */
+.action-area {
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 12px;
-    background: rgba(0,0,0,0.2);
-    padding: 8px 16px;
-    border-radius: 9999px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.state-badge {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    padding: 4px 12px;
+    border-radius: 99px;
+    text-transform: uppercase;
+}
+
+.state-badge.off {
+    background: rgba(132, 148, 149, 0.1);
+    color: var(--muted);
+    border: 1px solid rgba(132, 148, 149, 0.2);
+}
+
+.state-badge.on {
+    background: rgba(0, 245, 255, 0.1);
+    color: var(--primary);
+    border: 1px solid rgba(0, 245, 255, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.action-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+.activate-btn {
+    background: linear-gradient(135deg, var(--primary) 0%, #00c8d4 100%);
+    color: #000;
+    box-shadow: 0 4px 15px rgba(0, 245, 255, 0.3);
+}
+
+.activate-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 245, 255, 0.4);
+}
+
+.game-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
     border: 1px solid var(--outline);
 }
 
-.status-label {
-    font-size: 12px;
-    font-weight: 800;
-    min-width: 30px;
+.game-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary);
+    color: var(--primary);
 }
 
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 40px;
-    height: 20px;
+.game-hint {
+    font-size: 10px;
+    color: var(--on-surface-variant);
+    font-style: italic;
+    opacity: 0.7;
 }
 
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
+.btn-icon {
+    font-size: 16px;
 }
 
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #2e3637;
-    transition: .4s;
-    border-radius: 20px;
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 14px;
-    width: 14px;
-    left: 3px;
-    bottom: 3px;
-    background-color: #fff;
-    transition: .4s;
-    border-radius: 50%;
-}
-
-input:checked + .slider {
-    background-color: var(--primary);
-    box-shadow: 0 0 15px rgba(0, 245, 255, 0.3);
-}
-
-input:checked + .slider:before {
-    transform: translateX(20px);
-}
 
 /* List Card */
 .list-card {

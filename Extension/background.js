@@ -84,25 +84,41 @@ async function refreshRules() {
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'toggleFocus') {
-    chrome.storage.local.get('focusMode', (data) => {
-      const currentlyOn = data.focusMode === true;
-      const operation = currentlyOn ? disableFocusMode() : enableFocusMode();
+  const handleAction = async () => {
+    try {
+      if (request.action === 'enableFocus') {
+        await enableFocusMode();
+        return { focusMode: true };
+      } 
       
-      operation.then(() => {
-        sendResponse({ focusMode: !currentlyOn });
-      }).catch(err => {
-        console.error("Error toggling focus mode:", err);
-        sendResponse({ error: err.message });
-      });
-    });
-    return true; // async response
-  }
+      if (request.action === 'disableFocus') {
+        await disableFocusMode();
+        return { focusMode: false };
+      }
 
-  if (request.action === 'updateRules') {
-    refreshRules();
-    sendResponse({ success: true });
-  }
+      if (request.action === 'toggleFocus') {
+        const data = await chrome.storage.local.get('focusMode');
+        const currentlyOn = data.focusMode === true;
+        if (currentlyOn) await disableFocusMode();
+        else await enableFocusMode();
+        return { focusMode: !currentlyOn };
+      }
+
+      if (request.action === 'updateRules') {
+        await refreshRules();
+        return { success: true };
+      }
+
+      return { error: 'Unknown action' };
+    } catch (err) {
+      console.error(`Error handling action ${request.action}:`, err);
+      return { error: err.message };
+    }
+  };
+
+  // Execute async handler and send response
+  handleAction().then(sendResponse);
+  return true; // Keep message port open for async response
 });
 
 // Initialize state on install

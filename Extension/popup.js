@@ -1,73 +1,94 @@
-// popup.js - logic for the extension popup
+// popup.js — Frame-Out Extension Popup Logic
 
 document.addEventListener('DOMContentLoaded', () => {
-  const focusToggle = document.getElementById('focusToggle');
-  const statusText = document.getElementById('statusText');
-  const blockedList = document.getElementById('blockedList');
 
-  // Load initial state
-  chrome.storage.local.get(['focusMode'], (result) => {
-    const isOn = result.focusMode || false;
-    focusToggle.checked = isOn;
-    updateStatusText(isOn);
-  });
+    const timerDisplay  = document.getElementById('timerDisplay');
+    const timerLabel    = document.getElementById('timerLabel');
+    const stateOff      = document.getElementById('stateOff');
+    const stateOn       = document.getElementById('stateOn');
+    const activateBtn   = document.getElementById('activateBtn');
+    const gameBtn       = document.getElementById('gameBtn');
+    const settingsBtn   = document.getElementById('settingsBtn');
+    const blockedList   = document.getElementById('blockedList');
 
-  // Handle toggle change
-  focusToggle.addEventListener('change', () => {
-    const isChecked = focusToggle.checked;
-    
-    // Send message to background script to toggle focus mode
-    chrome.runtime.sendMessage({ action: 'toggleFocus' }, (response) => {
-      if (response && response.hasOwnProperty('focusMode')) {
-        updateStatusText(response.focusMode);
-      }
+    // ── Load initial state from storage ──────────────────────────────
+    chrome.storage.local.get(['focusMode'], (result) => {
+        const isOn = result.focusMode === true;
+        renderState(isOn);
     });
-  });
 
-  const timerDisplay = document.getElementById('timerDisplay');
-  const timerLabel = document.querySelector('.timer-label');
+    // ── ACTIVATE button (OFF → ON) ───────────────────────────────────
+    activateBtn.addEventListener('click', () => {
+        activateBtn.disabled = true;
+        activateBtn.textContent = '...';
 
-  // Settings button
-  const settingsBtn = document.querySelector('.settings-btn');
-  if (settingsBtn) {
-      settingsBtn.onclick = () => {
-          if (chrome.runtime.openOptionsPage) {
-              chrome.runtime.openOptionsPage();
-          } else {
-              window.open(chrome.runtime.getURL('options.html'));
-          }
-      };
-  }
+        chrome.runtime.sendMessage({ action: 'enableFocus' }, (response) => {
+            if (chrome.runtime.lastError) {
+                console.error("Popup: sendMessage error:", chrome.runtime.lastError.message);
+                activateBtn.disabled = false;
+                activateBtn.innerHTML = '<span class="btn-icon">⚡</span> ACTIVATE FOCUS';
+                return;
+            }
+            
+            activateBtn.disabled = false;
+            activateBtn.innerHTML = '<span class="btn-icon">⚡</span> ACTIVATE FOCUS';
+            if (response && response.focusMode !== undefined) {
+                renderState(response.focusMode);
+            }
+        });
+    });
 
-  function updateStatusText(isOn) {
-    statusText.innerText = isOn ? 'ON' : 'OFF';
-    statusText.style.color = isOn ? '#00F5FF' : '#849495';
-    
-    if (isOn) {
-      timerDisplay.classList.add('active');
-      timerDisplay.style.fontSize = '32px';
-      timerDisplay.textContent = "STAY HARD";
-      if (timerLabel) timerLabel.textContent = "DISTRACTIONS BLOCKED";
-    } else {
-      timerDisplay.classList.remove('active');
-      timerDisplay.style.fontSize = '36px';
-      timerDisplay.textContent = "READY";
-      if (timerLabel) timerLabel.textContent = "ACTIVATE TO FOCUS";
+    // ── GAME button (ON → open game page) ────────────────────────────
+    gameBtn.addEventListener('click', () => {
+        chrome.tabs.create({ url: chrome.runtime.getURL('game.html') });
+        window.close();
+    });
+
+    // ── Settings button ───────────────────────────────────────────────
+    settingsBtn.addEventListener('click', () => {
+        if (chrome.runtime.openOptionsPage) {
+            chrome.runtime.openOptionsPage();
+        } else {
+            window.open(chrome.runtime.getURL('options.html'));
+        }
+    });
+
+    // ── Render state (ON / OFF views) ────────────────────────────────
+    function renderState(isOn) {
+        if (isOn) {
+            // Focus is ACTIVE
+            timerDisplay.textContent    = 'LOCKED IN';
+            timerDisplay.style.fontSize = '30px';
+            timerDisplay.classList.add('active');
+            timerLabel.textContent      = 'DISTRACTIONS BLOCKED';
+
+            stateOn.style.display  = 'flex';
+            stateOff.style.display = 'none';
+        } else {
+            // Focus is OFF
+            timerDisplay.textContent    = 'READY';
+            timerDisplay.style.fontSize = '42px';
+            timerDisplay.classList.remove('active');
+            timerLabel.textContent      = 'ACTIVATE TO FOCUS';
+
+            stateOn.style.display  = 'none';
+            stateOff.style.display = 'flex';
+        }
     }
-  }
 
-  // Load blocked sites list
-  const DEFAULT_SITES = ['Instagram', 'Facebook', 'Reddit', 'Twitter', 'Netflix', 'YouTube Shorts'];
-  
-  chrome.storage.local.get(['customBlocklist'], (result) => {
-    const custom = result.customBlocklist || [];
-    const allSites = [...DEFAULT_SITES, ...custom];
-    
-    blockedList.innerHTML = ''; // Clear
-    allSites.forEach(site => {
-        const li = document.createElement('li');
-        li.textContent = site;
-        blockedList.appendChild(li);
+    // ── Load blocked sites list ───────────────────────────────────────
+    const DEFAULT_SITES = ['Instagram', 'Facebook', 'Reddit', 'Twitter', 'Netflix', 'YouTube Shorts'];
+
+    chrome.storage.local.get(['customBlocklist'], (result) => {
+        const custom   = result.customBlocklist || [];
+        const allSites = [...DEFAULT_SITES, ...custom];
+
+        blockedList.innerHTML = '';
+        allSites.forEach(site => {
+            const li = document.createElement('li');
+            li.textContent = site;
+            blockedList.appendChild(li);
+        });
     });
-  });
+
 });
