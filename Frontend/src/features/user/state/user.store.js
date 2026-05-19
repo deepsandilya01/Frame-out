@@ -73,6 +73,8 @@ const initialState = {
     error: null,
   },
 
+
+  
   // Leaderboard
   leaderboard: {
     list: [],
